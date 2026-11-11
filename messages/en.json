@@ -1,0 +1,83 @@
+{
+  "common": {
+    "appName": "Rentals",
+    "city": "Barwani",
+    "switchLanguage": "हिंदी",
+    "signOut": "Log out",
+    "back": "Back"
+  },
+  "home": {
+    "title": "Dresses for rent in Barwani",
+    "body": "Wedding and festival outfits from local shops, sent straight to their WhatsApp. Opening soon.",
+    "forShops": "List your shop"
+  },
+  "login": {
+    "title": "Your shop's dresses, online",
+    "body": "Sign in with Google to show your dresses to people in Barwani. It's free.",
+    "google": "Continue with Google",
+    "note": "The first time, we check your mobile number with a code. After that, one tap signs you in.",
+    "browse": "See the dresses",
+    "failed": "Google sign-in didn't finish. Try again."
+  },
+  "phone": {
+    "title": "Your mobile number",
+    "body": "We send a 6-digit code by SMS. You only do this once.",
+    "label": "Mobile number",
+    "send": "Send code",
+    "sending": "Sending…",
+    "invalid": "Enter a 10-digit number that starts with 6, 7, 8 or 9.",
+    "codeTitle": "Enter the code",
+    "codeBody": "Sent by SMS to {phone}.",
+    "verify": "Confirm number",
+    "verifying": "Checking…",
+    "resend": "Send the code again",
+    "resendIn": "Send again in {seconds}s",
+    "change": "Use a different number",
+    "wrongCode": "That code didn't match. Check the SMS and try again."
+  },
+  "onboarding": {
+    "title": "Tell us about your shop",
+    "body": "Shoppers see these details. We check every shop before it goes live.",
+    "shopName": "Shop name",
+    "ownerName": "Owner's name",
+    "whatsapp": "WhatsApp number",
+    "sameAsLogin": "Same as my login number, {phone}",
+    "city": "City",
+    "area": "Area",
+    "address": "Address",
+    "addressHelp": "Only used to give shoppers directions.",
+    "submit": "Send for approval",
+    "submitting": "Sending…",
+    "required": "Fill this in.",
+    "pickArea": "Pick your area.",
+    "invalidPhone": "Enter a 10-digit number that starts with 6, 7, 8 or 9.",
+    "failed": "Couldn't save. Check your connection and try again."
+  },
+  "seller": {
+    "pendingTitle": "Waiting for approval",
+    "pendingBody": "We have {shop}'s details. We usually check within a day. You can add dresses once it's approved.",
+    "suspendedTitle": "Shop paused",
+    "suspendedBody": "{shop} is hidden from shoppers right now. Contact the Rentals team to fix this.",
+    "liveTitle": "{shop}",
+    "liveBody": "Your shop is live in {area}.",
+    "emptyTitle": "No dresses yet",
+    "emptyBody": "Adding dresses opens in the next update.",
+    "addDress": "Add a dress"
+  },
+  "admin": {
+    "title": "Shops",
+    "pending": "Waiting",
+    "approved": "Live",
+    "suspended": "Paused",
+    "shop": "Shop",
+    "owner": "Owner",
+    "area": "Area",
+    "phone": "WhatsApp",
+    "joined": "Joined",
+    "approve": "Approve",
+    "suspend": "Pause",
+    "restore": "Make live again",
+    "empty": "No shops here.",
+    "newestFirst": "Newest first"
+  }
+}

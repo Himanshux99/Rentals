@@ -1,0 +1,356 @@
+// Data model from SPEC.md §3, plus the tables Better Auth needs (docs/PLAN.md "Database").
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  seller
+  admin
+}
+
+enum ShopStatus {
+  pending
+  approved
+  suspended
+}
+
+enum ReportStatus {
+  open
+  resolved
+  dismissed
+}
+
+// ---------- Auth (field names follow Better Auth's core schema) ----------
+
+model User {
+  id                  String    @id
+  name                String
+  email               String    @unique
+  emailVerified       Boolean   @default(false)
+  image               String?
+  phoneNumber         String?   @unique
+  phoneNumberVerified Boolean?  @default(false)
+  role                Role      @default(seller)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  sessions            Session[]
+  accounts            Account[]
+  shop                Shop?
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// Fixed-window counters for OTP sends and reports (no Redis).
+model RateLimit {
+  key       String   @id
+  count     Int
+  windowEnd DateTime
+}
+
+// ---------- Places ----------
+
+model City {
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  nameEn    String
+  nameHi    String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+  areas     Area[]
+  shops     Shop[]
+}
+
+model Area {
+  id        String  @id @default(cuid())
+  cityId    String
+  city      City    @relation(fields: [cityId], references: [id])
+  slug      String
+  nameEn    String
+  nameHi    String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+  shops     Shop[]
+
+  @@unique([cityId, slug])
+}
+
+// ---------- Shops and products ----------
+
+model Shop {
+  id            String     @id @default(cuid())
+  slug          String     @unique
+  shopName      String
+  ownerName     String
+  // null for a shop an admin created on someone's behalf, until its seller claims it
+  ownerUserId   String?    @unique
+  owner         User?      @relation(fields: [ownerUserId], references: [id])
+  // the verified login number; used to claim admin-created shops
+  loginPhone    String     @unique
+  whatsappPhone String
+  cityId        String
+  city          City       @relation(fields: [cityId], references: [id])
+  areaId        String
+  area          Area       @relation(fields: [areaId], references: [id])
+  addressLine   String
+  mapLat        Float?
+  mapLng        Float?
+  shopPhotoKey  String?
+  status        ShopStatus @default(pending)
+  isVerified    Boolean    @default(false)
+  deletedAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  designs       Design[]
+
+  @@index([status])
+}
+
+model Design {
+  id              String     @id @default(cuid())
+  shopId          String
+  shop            Shop       @relation(fields: [shopId], references: [id])
+  categoryId      String
+  category        Category   @relation(fields: [categoryId], references: [id])
+  forWhom         ForWhom[]
+  ageRanges       AgeRange[]
+  occasions       Occasion[]
+  setPieces       SetPiece[]
+  description     String?
+  // rupees; at least one of the three prices is required (checked in the service)
+  rentPerDay      Int?
+  rentPerWeek     Int?
+  sellPrice       Int?
+  securityDeposit Int?
+  measurements    Json?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  products        Product[]
+}
+
+model Product {
+  id                String         @id @default(cuid())
+  designId          String
+  design            Design         @relation(fields: [designId], references: [id], onDelete: Cascade)
+  code              String         @unique
+  colourId          String
+  colour            Colour         @relation(fields: [colourId], references: [id])
+  titleEn           String
+  titleHi           String
+  isHidden          Boolean        @default(false)
+  isFeatured        Boolean        @default(false)
+  lastSellerTouchAt DateTime       @default(now())
+  viewCount         Int            @default(0)
+  enquiryCount      Int            @default(0)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  sizes             ProductSize[]
+  images            ProductImage[]
+  views             ProductView[]
+  enquiries         EnquiryClick[]
+  reports           Report[]
+
+  @@index([isHidden])
+}
+
+model ProductSize {
+  id             String    @id @default(cuid())
+  productId      String
+  product        Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sizeId         String
+  size           Size      @relation(fields: [sizeId], references: [id])
+  stockCount     Int       @default(1)
+  availableCount Int       @default(1)
+  freeFromDate   DateTime? @db.Date
+  soldCount      Int       @default(0)
+
+  @@unique([productId, sizeId])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // storage keys, not URLs: storage.publicUrl(key) builds the URL at render time
+  key       String
+  ogKey     String
+  sortOrder Int     @default(0)
+
+  @@index([productId, sortOrder])
+}
+
+// ---------- Option lists (admin-managed, bilingual) ----------
+
+model Category {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nameEn    String
+  nameHi    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  designs   Design[]
+}
+
+model Occasion {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nameEn    String
+  nameHi    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  designs   Design[]
+}
+
+model Colour {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  nameEn    String
+  nameHi    String
+  hex       String
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  products  Product[]
+}
+
+model Size {
+  id        String        @id @default(cuid())
+  slug      String        @unique
+  nameEn    String
+  nameHi    String
+  sortOrder Int           @default(0)
+  isActive  Boolean       @default(true)
+  sizes     ProductSize[]
+}
+
+model AgeRange {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nameEn    String
+  nameHi    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  designs   Design[]
+}
+
+model ForWhom {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nameEn    String
+  nameHi    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  designs   Design[]
+}
+
+model SetPiece {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nameEn    String
+  nameHi    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  designs   Design[]
+}
+
+model SearchSynonym {
+  id     String @id @default(cuid())
+  term   String @unique // e.g. "lehnga", "लहंगा"
+  target String // canonical term, e.g. "lehenga"
+}
+
+// ---------- Events and moderation ----------
+
+model ProductView {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([productId, createdAt])
+}
+
+model EnquiryClick {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sizeId    String?
+  createdAt DateTime @default(now())
+
+  @@index([productId, createdAt])
+}
+
+model Report {
+  id        String       @id @default(cuid())
+  productId String
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  reason    String
+  status    ReportStatus @default(open)
+  createdAt DateTime     @default(now())
+
+  @@index([status])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String // user id of whoever made the change (admin when impersonating)
+  action    String
+  entity    String
+  entityId  String
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}
