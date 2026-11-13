@@ -1,10 +1,9 @@
 "use server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireRole } from "@/server/auth";
 import { env } from "@/server/env";
-import { createDesign } from "@/server/services/products";
-import { getShopForUser } from "@/server/services/shops";
+import { requireLiveShop } from "@/server/seller";
+import { createDesign, updateProduct, type NewDesign } from "@/server/services/products";
 
 // Error values are message keys in the "product" namespace; the form translates them.
 export type ProductFormState = {
@@ -39,16 +38,14 @@ const schema = z
   })
   .refine((d) => d.rentPerDay ?? d.rentPerWeek ?? d.sellPrice, { path: ["price"] });
 
-export async function createDesignAction(_prev: ProductFormState, formData: FormData): Promise<ProductFormState> {
-  const user = await requireRole("seller");
-  const shop = await getShopForUser(user.id, user.phoneNumber);
-  if (shop?.status !== "approved") redirect("/seller");
+type Parsed = { ok: true; data: NewDesign; productId?: string } | { ok: false; state: ProductFormState };
 
-  let raw: { colours?: { colourId?: string }[] };
+function parse(formData: FormData): Parsed {
+  let raw: { colours?: { colourId?: string }[]; productId?: unknown };
   try {
     raw = JSON.parse(String(formData.get("payload")));
   } catch {
-    return { errors: { form: "failed" } };
+    return { ok: false, state: { errors: { form: "failed" } } };
   }
   const parsed = schema.safeParse(raw);
   if (!parsed.success) {
@@ -64,15 +61,35 @@ export async function createDesignAction(_prev: ProductFormState, formData: Form
       } else if (field === "colours") state.errors.colours = "pickColour";
       else state.errors.form = "failed";
     }
-    return state;
+    return { ok: false, state };
   }
+  return { ok: true, data: parsed.data, productId: typeof raw.productId === "string" ? raw.productId : undefined };
+}
 
+export async function createDesignAction(_prev: ProductFormState, formData: FormData): Promise<ProductFormState> {
+  const { shop, user } = await requireLiveShop();
+  const p = parse(formData);
+  if (!p.ok) return p.state;
   let codes: string[];
   try {
-    codes = await createDesign(shop.id, user.id, parsed.data);
+    codes = await createDesign(shop.id, user.id, p.data);
   } catch (e) {
     console.error(e);
     return { errors: { form: "failed" } };
   }
   redirect(`/seller?added=${codes.length}`);
+}
+
+export async function updateProductAction(_prev: ProductFormState, formData: FormData): Promise<ProductFormState> {
+  const { shop, user } = await requireLiveShop();
+  const p = parse(formData);
+  if (!p.ok) return p.state;
+  if (!p.productId) return { errors: { form: "failed" } };
+  try {
+    await updateProduct(shop.id, user.id, p.productId, p.data);
+  } catch (e) {
+    console.error(e);
+    return { errors: { form: "failed" } };
+  }
+  redirect("/seller");
 }

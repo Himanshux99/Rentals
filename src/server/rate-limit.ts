@@ -14,3 +14,9 @@ export async function hit(key: string, max: number, windowSeconds: number): Prom
     RETURNING "count"`;
   return row.count <= max;
 }
+
+/** The caller's IP, for per-IP limits. Vercel and most proxies set x-forwarded-for. */
+export async function clientIp() {
+  const { headers } = await import("next/headers");
+  return (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}

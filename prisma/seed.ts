@@ -46,7 +46,7 @@ const barwaniAreas: Opt[] = [
 
 async function main() {
   const row = ([slug, nameEn, nameHi]: Opt, i: number) => ({ slug, nameEn, nameHi, sortOrder: i });
-  const up = async (model: any, list: Opt[]) => {
+  const up = async (model: { upsert(args: object): Promise<unknown> }, list: Opt[]) => {
     for (const [i, o] of list.entries()) await model.upsert({ where: { slug: o[0] }, create: row(o, i), update: row(o, i) });
   };
   await up(db.category, categories);

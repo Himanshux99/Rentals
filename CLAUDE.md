@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Rentals: a mobile-first, Hindi/English discovery site for dress rental shops in Barwani. Product spec: `SPEC.md`. Build plan, env table and phases: `docs/PLAN.md` (live copy: https://claude.ai/artifact/Ai3YxHkEQYWwgbzuecftNC). Phases 1–3 (foundation, seller sign-in, onboarding, shop approval, product upload) are built.
+Rentals: a mobile-first, Hindi/English discovery site for dress rental shops in Barwani. Product spec: `SPEC.md`. Build plan, env table and phases: `docs/PLAN.md` (live copy: https://claude.ai/artifact/Ai3YxHkEQYWwgbzuecftNC). All six phases are built in code (status and what's left for launch: `docs/PLAN.md` "Build status"). Public pages: `/`, `/p/[code]`, `/shop/[slug]`, `/saved`, `/(info)/[page]`. Seller: `/seller` (dashboard), `/seller/products/new` (`?from=` duplicates), `/seller/products/[id]/edit`, `/seller/settings`. Admin: `/admin/*`. Seller pages get their shop from `getSellerContext()` / `requireLiveShop()` in `src/server/seller.ts`, which also handles admin "act as seller" (an `impersonate` cookie honoured only for admins).
 
 ## Commands
 

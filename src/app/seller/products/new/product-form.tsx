@@ -9,32 +9,46 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { chip } from "@/components/app/chip";
 import { ImagePicker, type PickedImage } from "@/components/app/image-picker";
-import { createDesignAction, type ProductFormState } from "./actions";
+import { createDesignAction, updateProductAction, type ProductFormState } from "./actions";
 
 type Opt = { id: string; nameEn: string; nameHi: string };
 type Options = Record<"categories" | "forWhom" | "ageRanges" | "occasions" | "setPieces" | "sizes", Opt[]> & { colours: (Opt & { hex: string })[] };
 type PerColour = { images: PickedImage[]; sizes: Record<string, number> };
 type Prices = Record<"rentPerDay" | "rentPerWeek" | "sellPrice" | "securityDeposit", string>;
+/** Prefill for Edit (one fixed colour, with photos) and Duplicate (shared fields only). */
+export type ProductInitial = {
+  categoryId: string;
+  forWhomId: string;
+  ageRangeIds: string[];
+  occasionIds: string[];
+  setPieceIds: string[];
+  prices: Prices;
+  description: string;
+  colourIds: string[];
+  perColour: Record<string, PerColour>;
+};
 
 const legend = "flex items-center gap-2 text-lg font-semibold";
 const empty: PerColour = { images: [], sizes: {} };
 
-export function ProductForm({ options, maxImages, maxEdge }: { options: Options; maxImages: number; maxEdge: number }) {
+type FormProps = { options: Options; maxImages: number; maxEdge: number; initial?: ProductInitial; productId?: string };
+
+export function ProductForm({ options, maxImages, maxEdge, initial, productId }: FormProps) {
   const t = useTranslations("product");
   const locale = useLocale();
   const name = (o: Opt) => (locale === "hi" ? o.nameHi : o.nameEn);
-  const [state, action, pending] = useActionState<ProductFormState, FormData>(createDesignAction, {});
+  const [state, action, pending] = useActionState<ProductFormState, FormData>(productId ? updateProductAction : createDesignAction, {});
 
-  const [categoryId, setCategoryId] = useState("");
-  const [forWhomId, setForWhomId] = useState("");
-  const [ageRangeIds, setAgeRangeIds] = useState<string[]>([]);
-  const [occasionIds, setOccasionIds] = useState<string[]>([]);
-  const [setPieceIds, setSetPieceIds] = useState<string[]>([]);
-  const [colourIds, setColourIds] = useState<string[]>([]);
+  const [categoryId, setCategoryId] = useState(initial?.categoryId ?? "");
+  const [forWhomId, setForWhomId] = useState(initial?.forWhomId ?? "");
+  const [ageRangeIds, setAgeRangeIds] = useState<string[]>(initial?.ageRangeIds ?? []);
+  const [occasionIds, setOccasionIds] = useState<string[]>(initial?.occasionIds ?? []);
+  const [setPieceIds, setSetPieceIds] = useState<string[]>(initial?.setPieceIds ?? []);
+  const [colourIds, setColourIds] = useState<string[]>(initial?.colourIds ?? []);
   // kept for deselected colours too, so re-tapping a colour brings its photos back
-  const [perColour, setPerColour] = useState<Record<string, PerColour>>({});
-  const [prices, setPrices] = useState<Prices>({ rentPerDay: "", rentPerWeek: "", sellPrice: "", securityDeposit: "" });
-  const [description, setDescription] = useState("");
+  const [perColour, setPerColour] = useState<Record<string, PerColour>>(initial?.perColour ?? {});
+  const [prices, setPrices] = useState<Prices>(initial?.prices ?? { rentPerDay: "", rentPerWeek: "", sellPrice: "", securityDeposit: "" });
+  const [description, setDescription] = useState(initial?.description ?? "");
 
   const colour = (id: string) => perColour[id] ?? empty;
   const updateColour = (id: string, fn: (c: PerColour) => PerColour) => setPerColour((p) => ({ ...p, [id]: fn(p[id] ?? empty) }));
@@ -42,6 +56,7 @@ export function ProductForm({ options, maxImages, maxEdge }: { options: Options;
   const num = (s: string) => (s ? Number(s) : null);
 
   const payload = JSON.stringify({
+    productId,
     categoryId,
     forWhomId,
     ageRangeIds,
@@ -120,7 +135,8 @@ export function ProductForm({ options, maxImages, maxEdge }: { options: Options;
         {chips(options.setPieces, setPieceIds, setSetPieceIds, true)}
       </FieldSet>
 
-      <FieldSet>
+      {/* an edit keeps its colour: other colours are their own products */}
+      <FieldSet hidden={!!productId}>
         <FieldLegend className={legend}>
           <Palette className="size-5" />
           {t("colours")}
@@ -248,7 +264,7 @@ export function ProductForm({ options, maxImages, maxEdge }: { options: Options;
       )}
       <Button type="submit" className="h-14 text-lg" disabled={pending || uploading}>
         {(pending || uploading) && <Loader2 className="size-5 animate-spin" />}
-        {pending ? t("saving") : uploading ? t("waitUpload") : t("save", { count: Math.max(1, colourIds.length) })}
+        {pending ? t("saving") : uploading ? t("waitUpload") : productId ? t("saveChanges") : t("save", { count: Math.max(1, colourIds.length) })}
       </Button>
     </form>
   );

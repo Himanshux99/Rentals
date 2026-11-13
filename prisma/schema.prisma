@@ -190,6 +190,8 @@ model Product {
   titleEn           String
   titleHi           String
   isHidden          Boolean        @default(false)
+  // set by an admin (SPEC §9 force-hide); the seller can't undo it
+  hiddenByAdmin     Boolean        @default(false)
   isFeatured        Boolean        @default(false)
   lastSellerTouchAt DateTime       @default(now())
   viewCount         Int            @default(0)

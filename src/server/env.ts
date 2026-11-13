@@ -40,6 +40,10 @@ const schema = z
       .default("")
       .transform((s) => s.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean)),
     DEFAULT_CITY_SLUG: z.string().default("barwani"),
+    REPORT_MAX_PER_IP_PER_HOUR: int(5),
+    STALE_AFTER_DAYS: int(30),
+    // protects /api/cron/daily; Vercel Cron sends it as a Bearer token
+    CRON_SECRET: z.string().min(16).optional(),
   })
   .superRefine((e, ctx) => {
     const need = (keys: (keyof typeof e)[], why: string) =>
@@ -50,6 +54,7 @@ const schema = z
     // Keyed on Vercel's production deploy, not NODE_ENV, so `next build` + `next start` still works locally.
     if (process.env.VERCEL_ENV === "production") {
       if (e.OTP_DRIVER === "console") ctx.addIssue({ code: "custom", path: ["OTP_DRIVER"], message: "console OTP is not allowed in production" });
+      if (!e.CRON_SECRET) ctx.addIssue({ code: "custom", path: ["CRON_SECRET"], message: "required in production" });
       if (e.STORAGE_DRIVER === "local") ctx.addIssue({ code: "custom", path: ["STORAGE_DRIVER"], message: "local storage is not allowed in production" });
     }
   });
