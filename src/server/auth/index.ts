@@ -2,6 +2,7 @@ import "server-only";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
+import { env } from "../env";
 import { auth } from "./better-auth";
 
 export type CurrentUser = {
@@ -26,7 +27,8 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     image: u.image ?? null,
     role: u.role === "admin" ? "admin" : "seller",
     phoneNumber: u.phoneNumber ?? null,
-    phoneVerified: !!u.phoneNumberVerified,
+    // With phone OTP off, a Google sign-in is enough; the seller's WhatsApp number stands in for the phone.
+    phoneVerified: !!u.phoneNumberVerified || !env.PHONE_OTP_ENABLED,
   };
 });
 

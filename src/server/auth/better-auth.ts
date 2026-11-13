@@ -26,6 +26,8 @@ export const auth = betterAuth({
   disabledPaths: ["/sign-in/phone-number", "/phone-number/request-password-reset", "/phone-number/reset-password", "/sign-up/email", "/sign-in/email"],
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      if (!env.PHONE_OTP_ENABLED && ctx.path.startsWith("/phone-number/"))
+        throw new APIError("NOT_FOUND", { message: "Phone verification is turned off." });
       // Each SMS costs money: only a signed-in Google user may ask for a code.
       if (ctx.path === "/phone-number/send-otp" && !(await getSessionFromCtx(ctx)))
         throw new APIError("UNAUTHORIZED", { message: "Sign in with Google first." });

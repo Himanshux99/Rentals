@@ -29,6 +29,8 @@ const schema = z
     GOOGLE_CLIENT_SECRET: z.string().min(1),
     SESSION_MAX_AGE_DAYS: int(30),
 
+    // Off: no phone check. Sellers log in with Google only; their WhatsApp number becomes the login number.
+    PHONE_OTP_ENABLED: z.stringbool().default(false),
     OTP_DRIVER: z.enum(["console", "msg91"]).default("console"),
     MSG91_AUTH_KEY: z.string().optional(),
     MSG91_TEMPLATE_ID: z.string().optional(),
@@ -53,7 +55,7 @@ const schema = z
     if (e.OTP_DRIVER === "msg91") need(["MSG91_AUTH_KEY", "MSG91_TEMPLATE_ID"], "OTP_DRIVER=msg91");
     // Keyed on Vercel's production deploy, not NODE_ENV, so `next build` + `next start` still works locally.
     if (process.env.VERCEL_ENV === "production") {
-      if (e.OTP_DRIVER === "console") ctx.addIssue({ code: "custom", path: ["OTP_DRIVER"], message: "console OTP is not allowed in production" });
+      if (e.PHONE_OTP_ENABLED && e.OTP_DRIVER === "console") ctx.addIssue({ code: "custom", path: ["OTP_DRIVER"], message: "console OTP is not allowed in production" });
       if (!e.CRON_SECRET) ctx.addIssue({ code: "custom", path: ["CRON_SECRET"], message: "required in production" });
       if (e.STORAGE_DRIVER === "local") ctx.addIssue({ code: "custom", path: ["STORAGE_DRIVER"], message: "local storage is not allowed in production" });
     }

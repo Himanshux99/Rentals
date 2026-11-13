@@ -11,7 +11,8 @@ export async function createShopAction(_prev: OnboardingState, formData: FormDat
   const p = await parseShopForm(formData, user.phoneNumber, [shopPhotoPrefix(user.id)]);
   if (!p.ok) return p.state;
   try {
-    await createShop(user.id, user.phoneNumber!, p.input);
+    // no verified phone (OTP off): the WhatsApp number the seller typed becomes the login number
+    await createShop(user.id, user.phoneNumber ?? p.input.whatsappPhone, p.input);
   } catch (e) {
     console.error(e);
     return { errors: { form: "failed" }, values: p.values };
