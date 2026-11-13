@@ -1,24 +1,23 @@
 "use client";
 import { useActionState, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Building2, Loader2, MapPin, Phone, Store, User } from "lucide-react";
+import { Building2, Camera, Crosshair, Loader2, MapPin, Phone, Store, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { chip } from "@/components/app/chip";
+import { ImagePicker, type PickedImage } from "@/components/app/image-picker";
 import { createShopAction, type OnboardingState } from "./actions";
 
 type Place = { id: string; nameEn: string; nameHi: string };
 type City = Place & { slug: string; areas: Place[] };
 type Key = keyof NonNullable<OnboardingState["errors"]>;
 
-// Chips, not dropdowns (SPEC §13): selected chip takes the haldi field.
-const chip =
-  "h-12 px-4 text-base border border-border data-[pressed]:border-[var(--haldi)] data-[pressed]:bg-[var(--haldi)] data-[pressed]:text-[var(--haldi-ink)]";
 
-export function OnboardingForm(props: { cities: City[]; defaultCitySlug: string; loginPhone: string }) {
-  const { cities, defaultCitySlug, loginPhone } = props;
+export function OnboardingForm(props: { cities: City[]; defaultCitySlug: string; loginPhone: string; maxEdge: number }) {
+  const { cities, defaultCitySlug, loginPhone, maxEdge } = props;
   const t = useTranslations("onboarding");
   const locale = useLocale();
   const name = (p: Place) => (locale === "hi" ? p.nameHi : p.nameEn);
@@ -26,6 +25,21 @@ export function OnboardingForm(props: { cities: City[]; defaultCitySlug: string;
   const [cityId, setCityId] = useState((cities.find((c) => c.slug === defaultCitySlug) ?? cities[0])?.id ?? "");
   const [areaId, setAreaId] = useState("");
   const [same, setSame] = useState(true);
+  const [photo, setPhoto] = useState<PickedImage[]>([]);
+  const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
+  const [pinState, setPinState] = useState<"idle" | "locating" | "failed">("idle");
+
+  function locate() {
+    setPinState("locating");
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        setPin({ lat: +p.coords.latitude.toFixed(6), lng: +p.coords.longitude.toFixed(6) });
+        setPinState("idle");
+      },
+      () => setPinState("failed"),
+      { enableHighAccuracy: true, timeout: 15000 },
+    );
+  }
   const city = cities.find((c) => c.id === cityId);
   const err = (k: Key) => {
     const key = state.errors?.[k];
@@ -119,6 +133,32 @@ export function OnboardingForm(props: { cities: City[]; defaultCitySlug: string;
           <FieldDescription className="text-base">{t("addressHelp")}</FieldDescription>
           <FieldError>{err("addressLine")}</FieldError>
         </Field>
+
+        <Field>
+          <FieldLabel className="gap-2 text-base">
+            <Crosshair className="size-5" />
+            {t("pin")}
+          </FieldLabel>
+          <input type="hidden" name="mapLat" value={pin?.lat ?? ""} />
+          <input type="hidden" name="mapLng" value={pin?.lng ?? ""} />
+          <Button type="button" variant="outline" className="h-12 gap-2 text-base" onClick={locate} disabled={pinState === "locating"}>
+            {pinState === "locating" ? <Loader2 className="size-5 animate-spin" /> : <MapPin className="size-5" />}
+            {pin ? t("pinAgain") : t("pinUse")}
+          </Button>
+          <FieldDescription className="text-base">
+            {pinState === "failed" ? t("pinFailed") : pin ? t("pinSaved") : t("pinHelp")}
+          </FieldDescription>
+        </Field>
+
+        <Field>
+          <FieldLabel className="gap-2 text-base">
+            <Camera className="size-5" />
+            {t("photo")}
+          </FieldLabel>
+          <input type="hidden" name="shopPhotoKey" value={photo[0]?.key ?? ""} />
+          <ImagePicker scope="shop" max={1} maxEdge={maxEdge} images={photo} setImages={setPhoto} />
+          <FieldDescription className="text-base">{t("photoHelp")}</FieldDescription>
+        </Field>
       </FieldGroup>
 
       {err("form") && (
@@ -126,7 +166,7 @@ export function OnboardingForm(props: { cities: City[]; defaultCitySlug: string;
           {err("form")}
         </p>
       )}
-      <Button type="submit" className="h-14 text-lg" disabled={pending}>
+      <Button type="submit" className="h-14 text-lg" disabled={pending || photo.some((p) => !p.key && !p.failed)}>
         {pending && <Loader2 className="size-5 animate-spin" />}
         {pending ? t("submitting") : t("submit")}
       </Button>

@@ -11,6 +11,9 @@ export type NewShop = {
   cityId: string;
   areaId: string;
   addressLine: string;
+  mapLat: number | null;
+  mapLng: number | null;
+  shopPhotoKey: string | null;
 };
 
 /** The signed-in seller's shop. Also claims an admin-created shop registered to their verified number. */

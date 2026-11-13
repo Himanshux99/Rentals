@@ -168,3 +168,6 @@ Six phases, in order. Each one ends with something usable, so we can show it to 
 
 - **Phases 1–2 built (2026-11-10).** Foundation, Google + one-time phone OTP, onboarding, the pending/paused/live seller screens, and admin shop approval with audit log.
 - **Moved to Phase 3:** the onboarding shop photo and map pin, because they need the browser-compression upload flow.
+- **Phase 3 built (2026-11-13).** `/seller/products/new`: chips for every choice, N colours make N products under one Design, per-colour photos and sizes with stock steppers, browser compression (WebP main + OG JPEG under 300 KB), signed uploads with progress and one retry, reorder and delete, codes from the `product_code_seq` sequence (R1001…). The seller home lists products. Onboarding gained the optional shop photo (one JPEG, which also serves as its OG image) and a "use my location" map pin.
+  - Keys are `products/<shopId>/<id>.webp` and `<id>-og.jpg`, not `products/<code>/…`: the code doesn't exist until save. Saves reject keys outside the shop's prefix.
+  - Not yet done: deleting uploads the seller abandons without saving (orphans stay in storage), and the 3G throttle test.

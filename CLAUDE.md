@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Rentals: a mobile-first, Hindi/English discovery site for dress rental shops in Barwani. Product spec: `SPEC.md`. Build plan, env table and phases: `docs/PLAN.md` (live copy: https://claude.ai/artifact/Ai3YxHkEQYWwgbzuecftNC). Phases 1–2 (foundation, seller sign-in, onboarding, shop approval) are built.
+Rentals: a mobile-first, Hindi/English discovery site for dress rental shops in Barwani. Product spec: `SPEC.md`. Build plan, env table and phases: `docs/PLAN.md` (live copy: https://claude.ai/artifact/Ai3YxHkEQYWwgbzuecftNC). Phases 1–3 (foundation, seller sign-in, onboarding, shop approval, product upload) are built.
 
 ## Commands
 
@@ -15,7 +15,7 @@ npm test               # node:test via tsx, files matching src/**/*.test.ts
 npx tsx --test src/lib/slug.test.ts   # one test file
 npm run db:migrate     # prisma migrate dev (creates + applies a migration)
 npm run db:seed        # option lists + Barwani (idempotent upserts)
-npm run db:deploy      # prisma migrate deploy (CI / production)
+npm run db:deploy      # prisma migrate deploy (CI / production); on Neon set DIRECT_URL (non-pooler host) or it times out on the advisory lock
 ```
 
 Copy `.env.example` to `.env`. Local dev needs only `DATABASE_URL`, `AUTH_SECRET` and Google OAuth keys; storage and OTP default to `local` / `console` (the OTP code is printed in the dev server log).

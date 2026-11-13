@@ -51,7 +51,15 @@
     "required": "Fill this in.",
     "pickArea": "Pick your area.",
     "invalidPhone": "Enter a 10-digit number that starts with 6, 7, 8 or 9.",
-    "failed": "Couldn't save. Check your connection and try again."
+    "failed": "Couldn't save. Check your connection and try again.",
+    "pin": "Map pin (optional)",
+    "pinUse": "Use my current location",
+    "pinAgain": "Update the location",
+    "pinHelp": "Tap this while you are inside the shop.",
+    "pinSaved": "Location saved.",
+    "pinFailed": "Couldn't get the location. Allow location access and try again.",
+    "photo": "Shop photo (optional)",
+    "photoHelp": "A photo of the shop front helps shoppers find you."
   },
   "seller": {
     "pendingTitle": "Waiting for approval",
@@ -61,8 +69,9 @@
     "liveTitle": "{shop}",
     "liveBody": "Your shop is live in {area}.",
     "emptyTitle": "No dresses yet",
-    "emptyBody": "Adding dresses opens in the next update.",
-    "addDress": "Add a dress"
+    "emptyBody": "Add your first dress. Shoppers can see it straight away.",
+    "addDress": "Add a dress",
+    "added": "{count, plural, one {Dress added. It's live now.} other {# dresses added. They're live now.}}"
   },
   "admin": {
     "title": "Shops",
@@ -79,5 +88,51 @@
     "restore": "Make live again",
     "empty": "No shops here.",
     "newestFirst": "Newest first"
+  },
+  "upload": {
+    "add": "Add photos",
+    "addMore": "Add more photos",
+    "cover": "Cover",
+    "photo": "Photo {n}",
+    "uploading": "Uploading",
+    "failed": "Upload failed. Remove it and try again.",
+    "moveLeft": "Move earlier",
+    "moveRight": "Move later",
+    "remove": "Remove photo",
+    "limit": "{count} of {max} photos. The first photo is the cover."
+  },
+  "product": {
+    "title": "Add a dress",
+    "body": "Tap to choose. If the dress comes in more colours, pick them all: each colour gets its own listing.",
+    "category": "What is it?",
+    "forWhom": "For whom?",
+    "ageRange": "Age",
+    "occasions": "Occasions",
+    "setPieces": "Pieces in the set",
+    "pickAny": "Pick all that fit.",
+    "colours": "Colours",
+    "coloursHelp": "Pick every colour you have of this dress.",
+    "photos": "Photos",
+    "sizes": "Sizes you have",
+    "stockFor": "How many in {size}?",
+    "less": "One less",
+    "more": "One more",
+    "price": "Price",
+    "priceHelp": "Fill in at least one: per day, per week or selling price.",
+    "rentPerDay": "Rent per day",
+    "rentPerWeek": "Rent per week",
+    "sellPrice": "Selling price",
+    "securityDeposit": "Security deposit (optional)",
+    "description": "Anything else? (optional)",
+    "save": "{count, plural, one {Save and go live} other {Save # dresses and go live}}",
+    "saving": "Saving…",
+    "waitUpload": "Photos uploading…",
+    "pickCategory": "Pick what the dress is.",
+    "pickForWhom": "Pick who it is for.",
+    "pickColour": "Pick at least one colour.",
+    "needPrice": "Fill in at least one price.",
+    "needImage": "Add at least one photo for this colour.",
+    "needSize": "Pick at least one size for this colour.",
+    "failed": "Couldn't save. Check your connection and try again."
   }
 }

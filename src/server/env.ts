@@ -21,6 +21,8 @@ const schema = z
     R2_BUCKET: z.string().optional(),
     UPLOAD_URL_TTL_SECONDS: int(300),
     NEXT_PUBLIC_IMAGE_MAX_UPLOAD_MB: int(5),
+    NEXT_PUBLIC_IMAGE_MAX_EDGE: int(1600),
+    NEXT_PUBLIC_MAX_IMAGES_PER_PRODUCT: int(8),
 
     AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),
     GOOGLE_CLIENT_ID: z.string().min(1),

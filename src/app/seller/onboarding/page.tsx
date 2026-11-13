@@ -21,7 +21,7 @@ export default async function OnboardingPage() {
       <div className="flex flex-col gap-6 px-6 py-8 sm:px-10">
         <h1 className="text-4xl font-semibold">{t("title")}</h1>
         <p className="text-lg">{t("body")}</p>
-        <OnboardingForm cities={cities} defaultCitySlug={env.DEFAULT_CITY_SLUG} loginPhone={user.phoneNumber ?? ""} />
+        <OnboardingForm cities={cities} defaultCitySlug={env.DEFAULT_CITY_SLUG} loginPhone={user.phoneNumber ?? ""} maxEdge={env.NEXT_PUBLIC_IMAGE_MAX_EDGE} />
       </div>
     </section>
   );
