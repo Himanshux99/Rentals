@@ -5,7 +5,19 @@
     "switchLanguage": "हिंदी",
     "signOut": "Log out",
     "back": "Back",
-    "saved": "Saved"
+    "saved": "Saved",
+    "customerSite": "Customer site",
+    "sellerAccount": "Seller account"
+  },
+  "sell": {
+    "title": "Seller account",
+    "body": "A free page for your shop, so people in Barwani can see your dresses and message you on WhatsApp.",
+    "p1": "Sign in with Google.",
+    "p2": "Confirm your mobile number once with an SMS code.",
+    "p3": "Add your shop and upload photos of your dresses.",
+    "cta": "Continue",
+    "note": "It's free. You can always go back to the customer site.",
+    "back": "Back to the dresses"
   },
   "home": {
     "title": "Dresses for rent in Barwani",
@@ -205,6 +217,18 @@
     "moveLeft": "Move earlier",
     "moveRight": "Move later",
     "remove": "Remove photo",
+    "cropTitle": "Fit the photo",
+    "cropFree": "Free",
+    "cropHelp": "Drag the frame or its corners to choose the part to keep. What is inside the frame is what people see.",
+    "cropCoverTitle": "Fit the cover photo",
+    "cropCoverHelp": "This photo is the preview people see on WhatsApp. Drag and pinch it to fit the frame.",
+    "cropTooSmall": "Photo is too small. It must be at least {px}px wide.",
+    "addCover": "Add cover photo",
+    "edit": "Edit photo",
+    "cropZoom": "Zoom",
+    "cropRotate": "Rotate",
+    "cropCancel": "Skip photo",
+    "cropDone": "Use photo",
     "limit": "{count} of {max} photos. The first photo is the cover."
   },
   "product": {

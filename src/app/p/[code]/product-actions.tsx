@@ -52,7 +52,7 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
 
   function send() {
     beacon({ kind: "enquiry", code, sizeId });
-    window.location.href = waLink(whatsappPhone, enquiryMessage(locale, { title, code, url, size: size?.name }));
+    window.open(waLink(whatsappPhone, enquiryMessage(locale, { title, code, url, size: size?.name })), "_blank", "noopener,noreferrer");
     setAsk(false);
   }
 
@@ -94,7 +94,7 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
           <Heart className={saved ? "size-5 fill-current text-[var(--haldi)]" : "size-5"} />
           {saved ? t("saved") : t("save")}
         </Button>
-        <Button variant="outline" nativeButton={false} render={<a href={waShare(`${title} ${url}`)} />} className="h-12 gap-2 text-base">
+        <Button variant="outline" nativeButton={false} render={<a href={waShare(`${title} ${url}`)} target="_blank" rel="noopener noreferrer" />} className="h-12 gap-2 text-base">
           <Share2 className="size-5" />
           {t("share")}
         </Button>

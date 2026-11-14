@@ -35,9 +35,9 @@ export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: 
   return (
     <li className="flex flex-col bg-card">
       <Link href={`/p/${p.code}`} className="flex flex-1 flex-col focus-visible:outline-2 focus-visible:outline-ring">
-        <div className="relative aspect-[3/4] bg-muted">
+        <div className="relative aspect-square bg-muted">
           {cover && (
-            <Image src={imageSrc(cover.key)} alt="" fill priority={priority} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw" className="object-cover" />
+            <Image src={imageSrc(cover.key)} alt="" fill priority={priority} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw" className="object-contain" />
           )}
           <AvailabilityBadge sizes={p.sizes} className="absolute left-2 top-2" />
         </div>
@@ -60,5 +60,5 @@ export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: 
 }
 
 export function ProductGrid({ children }: { children: React.ReactNode }) {
-  return <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{children}</ul>;
+  return <ul className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4">{children}</ul>;
 }

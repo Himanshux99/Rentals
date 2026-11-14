@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -13,6 +12,7 @@ import { mainPrice } from "@/lib/catalog";
 import { env } from "@/server/env";
 import { getProductByCode } from "@/server/services/catalog";
 import { imageSrc, storage } from "@/server/storage";
+import { Gallery } from "./gallery";
 import { ProductActions } from "./product-actions";
 
 const load = cache((code: string) => getProductByCode(code.toUpperCase()));
@@ -67,19 +67,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
     <>
       <AppBar />
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-8 pt-2 sm:px-8 md:grid md:grid-cols-2 md:gap-10">
-        {/* swipe: native horizontal scroll-snap, no gallery script */}
-        <div className="-mx-4 flex snap-x snap-mandatory overflow-x-auto md:mx-0" aria-label={t("photos")}>
-          {p.images.map((img, i) => (
-            <div key={img.id} className="relative aspect-[3/4] w-full shrink-0 snap-center bg-muted">
-              <Image src={imageSrc(img.key)} alt={i === 0 ? title : ""} fill priority={i === 0} sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
-              {p.images.length > 1 && (
-                <span className="absolute bottom-2 right-2 bg-black/70 px-2 text-sm text-white tabular-nums">
-                  {i + 1}/{p.images.length}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
+        <Gallery images={p.images.map((img) => imageSrc(img.key))} title={title} />
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
@@ -113,16 +101,6 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
             ))}
           </dl>
 
-          <ProductActions
-            code={p.code}
-            title={title}
-            price={await priceLine(p)}
-            cover={p.images[0] ? imageSrc(p.images[0].key) : null}
-            url={`${env.APP_URL}/p/${p.code}`}
-            whatsappPhone={d.shop.whatsappPhone}
-            sizes={p.sizes.map((s) => ({ id: s.sizeId, name: name(s.size), available: s.availableCount }))}
-          />
-
           {facts.length > 0 && (
             <ul className="flex flex-col gap-3 text-base">
               {facts.map((f) => (
@@ -136,6 +114,17 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
               ))}
             </ul>
           )}
+
+          <ProductActions
+            code={p.code}
+            title={title}
+            price={await priceLine(p)}
+            cover={p.images[0] ? imageSrc(p.images[0].key) : null}
+            url={`${env.APP_URL}/p/${p.code}`}
+            whatsappPhone={d.shop.whatsappPhone}
+            sizes={p.sizes.map((s) => ({ id: s.sizeId, name: name(s.size), available: s.availableCount }))}
+          />
+
           {d.description && <p className="whitespace-pre-line text-lg">{d.description}</p>}
 
           <Link href={`/shop/${d.shop.slug}`} className="flex items-center gap-3 bg-card p-4 hover:bg-accent">

@@ -12,5 +12,5 @@ export async function setLocale(locale: "hi" | "en") {
 
 export async function signOutAction() {
   await signOut();
-  redirect("/login");
+  redirect("/");
 }
