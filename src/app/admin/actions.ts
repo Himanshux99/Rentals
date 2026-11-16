@@ -9,7 +9,7 @@ import { db } from "@/server/db";
 import { IMPERSONATE_COOKIE } from "@/server/seller";
 import { audit } from "@/server/services/audit";
 import { addSynonym, closeReport, deleteSynonym, OPTION_LISTS, saveOption, setProductFlag, type OptionList } from "@/server/services/admin";
-import { createShop, setShopStatus, setShopVerified, softDeleteShop } from "@/server/services/shops";
+import { createShop, setShopApproval, setShopStatus, setShopVerified, softDeleteShop } from "@/server/services/shops";
 import { decide, listQueue, setDirectUpload, type DecideResult, type Decision, type QueueCursor, type QueueFilter } from "@/server/services/moderation";
 import { REJECT_REASONS, type Moderation } from "@/lib/moderation";
 import { parseShopForm, type OnboardingState } from "../seller/onboarding/shop-form";
@@ -25,6 +25,12 @@ export async function changeShopStatus(shopId: string, status: ShopStatus) {
 export async function toggleVerified(shopId: string, value: boolean) {
   const admin = await requireRole("admin");
   await setShopVerified(shopId, value, admin.id);
+  revalidatePath("/admin");
+}
+
+export async function setShopApprovalAction(value: boolean) {
+  const admin = await requireRole("admin");
+  await setShopApproval(z.boolean().parse(value), admin.id);
   revalidatePath("/admin");
 }
 

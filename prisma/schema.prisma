@@ -234,6 +234,8 @@ model SiteSetting {
   id           Int      @id @default(1)
   // on: new uploads are approved at once; off: they wait in the review queue
   directUpload Boolean  @default(false)
+  // on: new seller shops wait for approval; off: they go live at once
+  shopApproval Boolean  @default(true)
   updatedAt    DateTime @updatedAt
 }
 

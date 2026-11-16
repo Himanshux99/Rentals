@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { MessageCircle, Search, Store } from "lucide-react";
+import { IndianRupee, MessageCircle, Search, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppBar } from "@/components/app/app-bar";
 import { SiteFooter, STATIC_PAGES } from "@/components/app/site-footer";
@@ -57,7 +57,7 @@ export default async function InfoPage({ params }: PageProps<"/[page]">) {
         ))}
         {page === "for-shops" && (
           <Button nativeButton={false} render={<Link href="/login" />} className="h-14 gap-2 text-lg">
-            <Store className="size-5" />
+            <IndianRupee className="size-5" />
             {t("for-shops.cta")}
           </Button>
         )}

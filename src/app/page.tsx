@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { CalendarDays, MapPin, ShieldCheck, Store, Wallet } from "lucide-react";
+import { CalendarDays, IndianRupee, MapPin, ShieldCheck, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppBar } from "@/components/app/app-bar";
 import { CatalogListing } from "@/components/app/catalog-listing";
@@ -44,7 +44,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               {t("browse")}
             </Button>
             <Button variant="outline" nativeButton={false} render={<Link href="/sell" />} className="h-12 gap-2 border-primary bg-card px-6 text-base text-primary">
-              <Store className="size-5" />
+              <IndianRupee className="size-5" />
               {t("forShops")}
             </Button>
           </div>

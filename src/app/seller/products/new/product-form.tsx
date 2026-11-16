@@ -30,7 +30,10 @@ export type ProductInitial = {
   sizes: Record<string, number>;
 };
 
-const legend = "flex items-center gap-2 text-lg font-semibold";
+const OFFERS = ["rentPerDay", "rentPerWeek", "sellPrice"] as const;
+type Offer = (typeof OFFERS)[number];
+
+const legend ="flex items-center gap-2 text-lg font-semibold";
 
 type FormProps = { options: Options; maxImages: number; maxEdge: number; initial?: ProductInitial; productId?: string };
 
@@ -52,6 +55,9 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
   const [setPieceIds, setSetPieceIds] = useState<string[]>(initial?.setPieceIds ?? []);
   const [prices, setPrices] = useState<Prices>(initial?.prices ?? { rentPerDay: "", rentPerWeek: "", sellPrice: "", securityDeposit: "" });
   const [description, setDescription] = useState(initial?.description ?? "");
+  // which prices the seller offers; a new dress starts with daily rent, an edit with whatever it already has
+  const [offers, setOffers] = useState<Offer[]>(() => (initial ? OFFERS.filter((k) => initial.prices[k]) : ["rentPerDay"]));
+  const rents = offers.includes("rentPerDay") || offers.includes("rentPerWeek");
 
   const uploading = images.some((i) => !i.key && !i.failed);
   const num = (s: string) => (s ? Number(s) : null);
@@ -66,10 +72,11 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
     ageRangeIds,
     occasionIds,
     setPieceIds,
-    rentPerDay: num(prices.rentPerDay),
-    rentPerWeek: num(prices.rentPerWeek),
-    sellPrice: num(prices.sellPrice),
-    securityDeposit: num(prices.securityDeposit),
+    // a price the seller un-picked is dropped even if its box still holds a number
+    rentPerDay: offers.includes("rentPerDay") ? num(prices.rentPerDay) : null,
+    rentPerWeek: offers.includes("rentPerWeek") ? num(prices.rentPerWeek) : null,
+    sellPrice: offers.includes("sellPrice") ? num(prices.sellPrice) : null,
+    securityDeposit: rents ? num(prices.securityDeposit) : null,
     description: description.trim() || null,
     images: images.filter((i) => i.key && i.ogKey).map((i) => ({ key: i.key, ogKey: i.ogKey })),
     sizes: options.sizes.filter((s) => sizes[s.id]).map((s) => ({ sizeId: s.id, stock: sizes[s.id] })),
@@ -193,13 +200,20 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
       {multi(PartyPopper, t("occasions"), options.occasions, occasionIds, setOccasionIds)}
       {multi(Layers, t("setPieces"), options.setPieces, setPieceIds, setSetPieceIds)}
 
-      <FieldSet>
+      <FieldSet data-invalid={!!err("price")}>
         <FieldLegend className={legend}>
           <IndianRupee className="size-5" />
           {t("price")}
         </FieldLegend>
         <FieldDescription className="text-base">{t("priceHelp")}</FieldDescription>
-        {(["rentPerDay", "rentPerWeek", "sellPrice", "securityDeposit"] as const).map((k) => (
+        <ToggleGroup multiple value={offers} onValueChange={(v: string[]) => setOffers(OFFERS.filter((k) => v.includes(k)))} className="flex-wrap">
+          {OFFERS.map((k) => (
+            <ToggleGroupItem key={k} value={k} className={chip}>
+              {t(`offer_${k}`)}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+        {[...offers, ...(rents ? (["securityDeposit"] as const) : [])].map((k) => (
           <label key={k} className="flex flex-col gap-1 text-base">
             {t(k)}
             <div className="flex items-stretch">
@@ -211,6 +225,7 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
                 onChange={(e) => setPrices((p) => ({ ...p, [k]: e.target.value.replace(/\D/g, "") }))}
                 className="h-12 text-lg tabular-nums md:text-lg"
               />
+              {k !== "securityDeposit" && <span className="flex h-12 items-center bg-muted px-4 text-base">{t(`unit_${k}`)}</span>}
             </div>
           </label>
         ))}

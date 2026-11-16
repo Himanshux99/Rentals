@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ConfirmButton } from "@/components/app/confirm-button";
 import type { ShopStatus } from "@/generated/prisma/client";
-import { listShops } from "@/server/services/shops";
+import { SettingSwitch } from "@/components/app/setting-switch";
+import { getShopApproval, listShops } from "@/server/services/shops";
 import { cn } from "@/lib/utils";
-import { changeShopStatus, deleteShopAction, startImpersonating, toggleVerified } from "./actions";
+import { changeShopStatus, deleteShopAction, setShopApprovalAction, startImpersonating, toggleVerified } from "./actions";
 
 export const metadata: Metadata = { title: "Shops" };
 
@@ -20,7 +21,7 @@ export default async function AdminShops({ searchParams }: PageProps<"/admin">) 
   const sp = await searchParams;
   const status = STATUSES.includes(sp.status as ShopStatus) ? (sp.status as ShopStatus) : "pending";
   const q = typeof sp.q === "string" ? sp.q : "";
-  const [t, locale, shops] = await Promise.all([getTranslations("admin"), getLocale(), listShops(status, q)]);
+  const [t, locale, shops, shopApproval] = await Promise.all([getTranslations("admin"), getLocale(), listShops(status, q), getShopApproval()]);
   const date = new Intl.DateTimeFormat(locale === "hi" ? "hi-IN" : "en-IN", { day: "numeric", month: "short" });
 
   return (
@@ -32,6 +33,23 @@ export default async function AdminShops({ searchParams }: PageProps<"/admin">) 
           {t("createShop")}
         </Button>
       </div>
+      <SettingSwitch
+        id="shop-approval"
+        initial={shopApproval}
+        risky={false}
+        action={setShopApprovalAction}
+        text={{
+          title: t("shopApprovalTitle"),
+          onBody: t("shopApprovalOnBody"),
+          offBody: t("shopApprovalOffBody"),
+          onToast: t("shopApprovalOnToast"),
+          offToast: t("shopApprovalOffToast"),
+          confirmTitle: t("shopApprovalConfirmTitle"),
+          confirmBody: t("shopApprovalConfirmBody"),
+          confirm: t("shopApprovalConfirm"),
+          cancel: t("cancel"),
+        }}
+      />
       <div className="flex flex-wrap items-center gap-2">
         <nav className="flex flex-wrap gap-2" aria-label={t("title")}>
           {STATUSES.map((s) => (

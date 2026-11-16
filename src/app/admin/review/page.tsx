@@ -9,7 +9,8 @@ import type { Moderation } from "@/lib/moderation";
 import { cn } from "@/lib/utils";
 import { db } from "@/server/db";
 import { countPending, getDirectUpload, listQueue, type QueueFilter } from "@/server/services/moderation";
-import { DirectUploadSwitch } from "./direct-upload";
+import { SettingSwitch } from "@/components/app/setting-switch";
+import { setDirectUploadAction } from "../actions";
 import { ReviewQueue } from "./review-queue";
 
 export const metadata: Metadata = { title: "Review" };
@@ -44,7 +45,23 @@ export default async function AdminReview({ searchParams }: PageProps<"/admin/re
     <>
       <h1 className="text-4xl font-semibold">{t("title")}</h1>
 
-      <DirectUploadSwitch initial={directUpload} />
+      <SettingSwitch
+        id="direct-upload"
+        initial={directUpload}
+        risky
+        action={setDirectUploadAction}
+        text={{
+          title: t("directTitle"),
+          onBody: t("directOnBody"),
+          offBody: t("directOffBody"),
+          onToast: t("directOnToast"),
+          offToast: t("directOffToast"),
+          confirmTitle: t("directConfirmTitle"),
+          confirmBody: t("directConfirmBody"),
+          confirm: t("directConfirm"),
+          cancel: t("cancel"),
+        }}
+      />
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">

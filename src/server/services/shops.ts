@@ -30,14 +30,27 @@ export async function getShopForUser(userId: string, verifiedPhone: string | nul
   });
 }
 
-/** A seller's own shop (pending), or with `userId` null an admin-created live shop the seller claims later. */
+/** On (the default, also when the row is missing): seller-created shops start pending. Off: they go live at once. */
+export const getShopApproval = async () => (await db.siteSetting.findUnique({ where: { id: 1 } }))?.shopApproval ?? true;
+
+/** Affects shops created from now on; pending shops stay pending. */
+export async function setShopApproval(value: boolean, actorId: string) {
+  await db.$transaction(async (tx) => {
+    const before = await tx.siteSetting.findUnique({ where: { id: 1 } });
+    await tx.siteSetting.upsert({ where: { id: 1 }, create: { id: 1, shopApproval: value }, update: { shopApproval: value } });
+    await audit(tx, { actorId, action: `setting.shopApproval.${value}`, entity: "SiteSetting", entityId: "1", before: { shopApproval: before?.shopApproval ?? true }, after: { shopApproval: value } });
+  });
+}
+
+/** A seller's own shop (pending unless shop approval is off), or with `userId` null an admin-created live shop the seller claims later. */
 export async function createShop(userId: string | null, loginPhone: string, input: NewShop, actorId = userId!) {
   const area = await db.area.findFirst({ where: { id: input.areaId, cityId: input.cityId, isActive: true } });
   if (!area) throw new Error("Area does not belong to the city");
   const slug = await uniqueSlug(input.shopName);
   return db.$transaction(async (tx) => {
+    const approval = (await tx.siteSetting.findUnique({ where: { id: 1 } }))?.shopApproval ?? true;
     const shop = await tx.shop.create({
-      data: { ...input, slug, ownerUserId: userId, loginPhone, status: userId ? "pending" : "approved" },
+      data: { ...input, slug, ownerUserId: userId, loginPhone, status: userId && approval ? "pending" : "approved" },
     });
     await audit(tx, { actorId, action: userId ? "shop.create" : "shop.createOnBehalf", entity: "Shop", entityId: shop.id, after: shop });
     return shop;

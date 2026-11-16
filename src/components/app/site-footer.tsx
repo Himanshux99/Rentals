@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Store } from "lucide-react";
+import { IndianRupee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -20,7 +20,7 @@ export async function SiteFooter() {
           </Link>
           <p className="max-w-sm text-base text-white/80">{home("body")}</p>
           <Button variant="outline" nativeButton={false} render={<Link href="/sell" />} className="h-12 gap-2 border-white/40 bg-transparent px-5 text-base text-white hover:bg-white/10 hover:text-white">
-            <Store className="size-5" />
+            <IndianRupee className="size-5" />
             {home("forShops")}
           </Button>
         </div>

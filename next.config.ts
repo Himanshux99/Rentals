@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/brand/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=604800" }] }];
   },
+  // Every user agent gets blocking metadata, so generateMetadata tags land in <head> instead of streaming into <body>.
+  // Costs one generateMetadata round-trip of TTFB on dynamic pages (the product page's lookup is the slowest).
+  htmlLimitedBots: /.*/,
   turbopack: {
     rules: {
       "*.css": {
