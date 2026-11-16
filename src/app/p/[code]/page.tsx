@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps<"/p/[code]">): Prom
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: "website", images: og ? [{ url: storage.publicUrl(og.ogKey), width: 1200, type: "image/jpeg" }] : [] },
+    openGraph: { title, description, url, type: "website", images: og ? [{ url: storage.publicUrl(og.ogKey), width: 1200, height: 1200, type: "image/jpeg" }] : [] },
   };
 }
 
