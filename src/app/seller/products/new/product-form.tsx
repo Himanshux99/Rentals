@@ -1,7 +1,7 @@
 "use client";
 import { useActionState, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Check, FileText, IndianRupee, Layers, Loader2, Minus, Palette, PartyPopper, Plus, Ruler, Shirt, Tag, Users } from "lucide-react";
+import { Camera, FileText, Gem, IndianRupee, Layers, Loader2, Minus, Palette, PartyPopper, Plus, Ruler, Scissors, Shirt, Tag, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FieldDescription, FieldError, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -12,24 +12,25 @@ import { ImagePicker, type PickedImage } from "@/components/app/image-picker";
 import { createDesignAction, updateProductAction, type ProductFormState } from "./actions";
 
 type Opt = { id: string; nameEn: string; nameHi: string };
-type Options = Record<"categories" | "forWhom" | "ageRanges" | "occasions" | "setPieces" | "sizes", Opt[]> & { colours: (Opt & { hex: string })[] };
-type PerColour = { images: PickedImage[]; sizes: Record<string, number> };
+type Options = Record<"categories" | "forWhom" | "ageRanges" | "occasions" | "setPieces" | "fabrics" | "works" | "sizes", Opt[]> & { colours: (Opt & { hex: string })[] };
 type Prices = Record<"rentPerDay" | "rentPerWeek" | "sellPrice" | "securityDeposit", string>;
-/** Prefill for Edit (one fixed colour, with photos) and Duplicate (shared fields only). */
+/** Prefill for Edit (with photos and sizes) and Duplicate (choices only). */
 export type ProductInitial = {
   categoryId: string;
   forWhomId: string;
   ageRangeIds: string[];
   occasionIds: string[];
   setPieceIds: string[];
+  fabricIds: string[];
+  workIds: string[];
+  colourIds: string[];
   prices: Prices;
   description: string;
-  colourIds: string[];
-  perColour: Record<string, PerColour>;
+  images: PickedImage[];
+  sizes: Record<string, number>;
 };
 
 const legend = "flex items-center gap-2 text-lg font-semibold";
-const empty: PerColour = { images: [], sizes: {} };
 
 type FormProps = { options: Options; maxImages: number; maxEdge: number; initial?: ProductInitial; productId?: string };
 
@@ -39,26 +40,29 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
   const name = (o: Opt) => (locale === "hi" ? o.nameHi : o.nameEn);
   const [state, action, pending] = useActionState<ProductFormState, FormData>(productId ? updateProductAction : createDesignAction, {});
 
+  const [images, setImages] = useState<PickedImage[]>(initial?.images ?? []);
   const [categoryId, setCategoryId] = useState(initial?.categoryId ?? "");
   const [forWhomId, setForWhomId] = useState(initial?.forWhomId ?? "");
+  const [colourIds, setColourIds] = useState<string[]>(initial?.colourIds ?? []);
+  const [sizes, setSizes] = useState<Record<string, number>>(initial?.sizes ?? {});
+  const [fabricIds, setFabricIds] = useState<string[]>(initial?.fabricIds ?? []);
+  const [workIds, setWorkIds] = useState<string[]>(initial?.workIds ?? []);
   const [ageRangeIds, setAgeRangeIds] = useState<string[]>(initial?.ageRangeIds ?? []);
   const [occasionIds, setOccasionIds] = useState<string[]>(initial?.occasionIds ?? []);
   const [setPieceIds, setSetPieceIds] = useState<string[]>(initial?.setPieceIds ?? []);
-  const [colourIds, setColourIds] = useState<string[]>(initial?.colourIds ?? []);
-  // kept for deselected colours too, so re-tapping a colour brings its photos back
-  const [perColour, setPerColour] = useState<Record<string, PerColour>>(initial?.perColour ?? {});
   const [prices, setPrices] = useState<Prices>(initial?.prices ?? { rentPerDay: "", rentPerWeek: "", sellPrice: "", securityDeposit: "" });
   const [description, setDescription] = useState(initial?.description ?? "");
 
-  const colour = (id: string) => perColour[id] ?? empty;
-  const updateColour = (id: string, fn: (c: PerColour) => PerColour) => setPerColour((p) => ({ ...p, [id]: fn(p[id] ?? empty) }));
-  const uploading = colourIds.some((id) => colour(id).images.some((i) => !i.key && !i.failed));
+  const uploading = images.some((i) => !i.key && !i.failed);
   const num = (s: string) => (s ? Number(s) : null);
 
   const payload = JSON.stringify({
     productId,
     categoryId,
     forWhomId,
+    colourIds,
+    fabricIds,
+    workIds,
     ageRangeIds,
     occasionIds,
     setPieceIds,
@@ -67,11 +71,8 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
     sellPrice: num(prices.sellPrice),
     securityDeposit: num(prices.securityDeposit),
     description: description.trim() || null,
-    colours: colourIds.map((colourId) => ({
-      colourId,
-      images: colour(colourId).images.filter((i) => i.key && i.ogKey).map((i) => ({ key: i.key, ogKey: i.ogKey })),
-      sizes: options.sizes.filter((s) => colour(colourId).sizes[s.id]).map((s) => ({ sizeId: s.id, stock: colour(colourId).sizes[s.id] })),
-    })),
+    images: images.filter((i) => i.key && i.ogKey).map((i) => ({ key: i.key, ogKey: i.ogKey })),
+    sizes: options.sizes.filter((s) => sizes[s.id]).map((s) => ({ sizeId: s.id, stock: sizes[s.id] })),
   });
   const err = (k: keyof NonNullable<ProductFormState["errors"]>) => (state.errors?.[k] ? t(state.errors[k]) : null);
 
@@ -85,10 +86,29 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
     </ToggleGroup>
   );
   const single = (set: (v: string) => void) => (v: string[]) => set(v[0] ?? "");
+  const multi = (Icon: typeof Tag, label: string, list: Opt[], value: string[], onChange: (v: string[]) => void) => (
+    <FieldSet>
+      <FieldLegend className={legend}>
+        <Icon className="size-5" />
+        {label}
+      </FieldLegend>
+      <FieldDescription className="text-base">{t("pickAny")}</FieldDescription>
+      {chips(list, value, onChange, true)}
+    </FieldSet>
+  );
 
   return (
     <form action={action} className="flex flex-col gap-10">
       <input type="hidden" name="payload" value={payload} />
+
+      <FieldSet data-invalid={!!err("images")}>
+        <FieldLegend className={legend}>
+          <Camera className="size-5" />
+          {t("photos")}
+        </FieldLegend>
+        <ImagePicker scope="product" max={maxImages} maxEdge={maxEdge} images={images} setImages={setImages} />
+        <FieldError>{err("images")}</FieldError>
+      </FieldSet>
 
       <FieldSet data-invalid={!!err("category")}>
         <FieldLegend className={legend}>
@@ -99,7 +119,7 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
         <FieldError>{err("category")}</FieldError>
       </FieldSet>
 
-      <FieldSet>
+      <FieldSet data-invalid={!!err("forWhom")}>
         <FieldLegend className={legend}>
           <Users className="size-5" />
           {t("forWhom")}
@@ -108,122 +128,70 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
         <FieldError>{err("forWhom")}</FieldError>
       </FieldSet>
 
-      <FieldSet>
-        <FieldLegend className={legend}>
-          <Shirt className="size-5" />
-          {t("ageRange")}
-        </FieldLegend>
-        <FieldDescription className="text-base">{t("pickAny")}</FieldDescription>
-        {chips(options.ageRanges, ageRangeIds, setAgeRangeIds, true)}
-      </FieldSet>
-
-      <FieldSet>
-        <FieldLegend className={legend}>
-          <PartyPopper className="size-5" />
-          {t("occasions")}
-        </FieldLegend>
-        <FieldDescription className="text-base">{t("pickAny")}</FieldDescription>
-        {chips(options.occasions, occasionIds, setOccasionIds, true)}
-      </FieldSet>
-
-      <FieldSet>
-        <FieldLegend className={legend}>
-          <Layers className="size-5" />
-          {t("setPieces")}
-        </FieldLegend>
-        <FieldDescription className="text-base">{t("pickAny")}</FieldDescription>
-        {chips(options.setPieces, setPieceIds, setSetPieceIds, true)}
-      </FieldSet>
-
-      {/* an edit keeps its colour: other colours are their own products */}
-      <FieldSet hidden={!!productId}>
+      <FieldSet data-invalid={!!err("colours")}>
         <FieldLegend className={legend}>
           <Palette className="size-5" />
           {t("colours")}
         </FieldLegend>
         <FieldDescription className="text-base">{t("coloursHelp")}</FieldDescription>
-        <ToggleGroup multiple value={colourIds} onValueChange={setColourIds} className="flex-wrap gap-3">
+        <ToggleGroup multiple value={colourIds} onValueChange={setColourIds} className="flex-wrap">
           {options.colours.map((c) => (
-            <ToggleGroupItem key={c.id} value={c.id} className="group h-auto w-16 flex-col gap-1 p-1 text-sm hover:bg-transparent aria-pressed:bg-transparent">
-              <span
-                className="flex size-12 items-center justify-center rounded-full border-2 border-border group-aria-pressed:ring-4 group-aria-pressed:ring-primary"
-                style={{ backgroundColor: c.hex }}
-              >
-                <Check className="hidden size-6 text-white mix-blend-difference group-aria-pressed:block" />
-              </span>
-              <span className="whitespace-normal text-center leading-tight">{name(c)}</span>
+            <ToggleGroupItem key={c.id} value={c.id} className={chip}>
+              <span className="size-5 rounded-full border border-border" style={{ backgroundColor: c.hex }} aria-hidden />
+              {name(c)}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
         <FieldError>{err("colours")}</FieldError>
       </FieldSet>
 
-      {colourIds.map((cid) => {
-        const c = options.colours.find((x) => x.id === cid)!;
-        const pc = colour(cid);
-        const colourErr = state.colourErrors?.[cid];
-        return (
-          <section key={cid} className="flex flex-col gap-6 border-l-4 border-primary bg-muted/40 py-4 pl-4 pr-2" aria-label={name(c)}>
-            <h2 className="flex items-center gap-3 text-2xl font-semibold">
-              <span className="size-8 rounded-full border-2 border-border" style={{ backgroundColor: c.hex }} aria-hidden />
-              {name(c)}
-            </h2>
+      <FieldSet data-invalid={!!err("sizes")}>
+        <FieldLegend className={legend}>
+          <Ruler className="size-5" />
+          {t("sizes")}
+        </FieldLegend>
+        <ToggleGroup
+          multiple
+          value={Object.keys(sizes)}
+          onValueChange={(v: string[]) => setSizes((x) => Object.fromEntries(v.map((s) => [s, x[s] ?? 1])))}
+          className="flex-wrap"
+        >
+          {options.sizes.map((s) => (
+            <ToggleGroupItem key={s.id} value={s.id} className={chip}>
+              {name(s)}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+        {options.sizes
+          .filter((s) => sizes[s.id])
+          .map((s) => {
+            const n = sizes[s.id];
+            const set = (v: number) => setSizes((x) => ({ ...x, [s.id]: Math.min(99, Math.max(1, v)) }));
+            return (
+              <div key={s.id} className="flex items-center justify-between gap-3">
+                <span className="text-lg">{t("stockFor", { size: name(s) })}</span>
+                <div className="flex items-center">
+                  <Button type="button" variant="outline" className="size-12" onClick={() => set(n - 1)} disabled={n <= 1} aria-label={t("less")}>
+                    <Minus className="size-5" />
+                  </Button>
+                  <span className="w-12 text-center text-xl tabular-nums" aria-live="polite">
+                    {n}
+                  </span>
+                  <Button type="button" variant="outline" className="size-12" onClick={() => set(n + 1)} disabled={n >= 99} aria-label={t("more")}>
+                    <Plus className="size-5" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        <FieldError>{err("sizes")}</FieldError>
+      </FieldSet>
 
-            <FieldSet>
-              <FieldLegend className={legend}>{t("photos")}</FieldLegend>
-              <ImagePicker
-                scope="product"
-                max={maxImages}
-                maxEdge={maxEdge}
-                images={pc.images}
-                setImages={(fn) => updateColour(cid, (x) => ({ ...x, images: fn(x.images) }))}
-              />
-            </FieldSet>
-
-            <FieldSet>
-              <FieldLegend className={legend}>
-                <Ruler className="size-5" />
-                {t("sizes")}
-              </FieldLegend>
-              <ToggleGroup
-                multiple
-                value={Object.keys(pc.sizes)}
-                onValueChange={(v: string[]) => updateColour(cid, (x) => ({ ...x, sizes: Object.fromEntries(v.map((s) => [s, x.sizes[s] ?? 1])) }))}
-                className="flex-wrap"
-              >
-                {options.sizes.map((s) => (
-                  <ToggleGroupItem key={s.id} value={s.id} className={chip}>
-                    {name(s)}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-              {options.sizes
-                .filter((s) => pc.sizes[s.id])
-                .map((s) => {
-                  const n = pc.sizes[s.id];
-                  const set = (v: number) => updateColour(cid, (x) => ({ ...x, sizes: { ...x.sizes, [s.id]: Math.min(99, Math.max(1, v)) } }));
-                  return (
-                    <div key={s.id} className="flex items-center justify-between gap-3">
-                      <span className="text-lg">{t("stockFor", { size: name(s) })}</span>
-                      <div className="flex items-center">
-                        <Button type="button" variant="outline" className="size-12" onClick={() => set(n - 1)} disabled={n <= 1} aria-label={t("less")}>
-                          <Minus className="size-5" />
-                        </Button>
-                        <span className="w-12 text-center text-xl tabular-nums" aria-live="polite">
-                          {n}
-                        </span>
-                        <Button type="button" variant="outline" className="size-12" onClick={() => set(n + 1)} disabled={n >= 99} aria-label={t("more")}>
-                          <Plus className="size-5" />
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-            </FieldSet>
-            {colourErr && <FieldError className="text-base">{t(colourErr)}</FieldError>}
-          </section>
-        );
-      })}
+      {multi(Scissors, t("fabrics"), options.fabrics, fabricIds, setFabricIds)}
+      {multi(Gem, t("works"), options.works, workIds, setWorkIds)}
+      {multi(Shirt, t("ageRange"), options.ageRanges, ageRangeIds, setAgeRangeIds)}
+      {multi(PartyPopper, t("occasions"), options.occasions, occasionIds, setOccasionIds)}
+      {multi(Layers, t("setPieces"), options.setPieces, setPieceIds, setSetPieceIds)}
 
       <FieldSet>
         <FieldLegend className={legend}>
@@ -264,7 +232,7 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
       )}
       <Button type="submit" className="h-14 text-lg" disabled={pending || uploading}>
         {(pending || uploading) && <Loader2 className="size-5 animate-spin" />}
-        {pending ? t("saving") : uploading ? t("waitUpload") : productId ? t("saveChanges") : t("save", { count: Math.max(1, colourIds.length) })}
+        {pending ? t("saving") : uploading ? t("waitUpload") : productId ? t("saveChanges") : t("save")}
       </Button>
     </form>
   );

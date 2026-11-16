@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t("body"),
     metadataBase: new URL(process.env.APP_URL ?? "http://localhost:3000"),
     appleWebApp: { capable: true, title: "Rentals" },
-    icons: { icon: "/pwa-icon/192", apple: "/pwa-icon/192" },
+    icons: { icon: "/brand/icon-rounded.png", apple: "/brand/icon-192.png" },
   };
 }
 

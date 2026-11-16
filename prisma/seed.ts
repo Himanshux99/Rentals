@@ -35,6 +35,14 @@ const setPieces: Opt[] = [
   ["blouse", "Blouse", "ब्लाउज़"], ["skirt", "Skirt", "घाघरा"], ["dupatta", "Dupatta", "दुपट्टा"], ["kurta", "Kurta", "कुर्ता"],
   ["pyjama", "Pyjama", "पायजामा"], ["jacket", "Jacket", "जैकेट"], ["safa", "Safa", "साफ़ा"], ["stole", "Stole", "स्टोल"],
 ];
+const fabrics: Opt[] = [
+  ["silk", "Silk", "सिल्क"], ["georgette", "Georgette", "जॉर्जेट"], ["velvet", "Velvet", "वेलवेट"], ["net", "Net", "नेट"],
+  ["chiffon", "Chiffon", "शिफॉन"], ["satin", "Satin", "साटन"], ["cotton", "Cotton", "कॉटन"], ["brocade", "Brocade", "ब्रोकेड"],
+];
+const works: Opt[] = [
+  ["zari", "Zari", "ज़री"], ["embroidery", "Embroidery", "कढ़ाई"], ["sequins", "Sequins", "सितारे"], ["mirror", "Mirror", "शीशा"],
+  ["stone", "Stone", "स्टोन"], ["gota-patti", "Gota Patti", "गोटा पत्ती"], ["printed", "Printed", "प्रिंटेड"], ["plain", "Plain", "सादा"],
+];
 const synonyms: [string, string][] = [
   ["lehnga", "lehenga"], ["lahenga", "lehenga"], ["लहंगा", "lehenga"], ["लहँगा", "lehenga"], ["sari", "saree"], ["साड़ी", "saree"],
   ["sherwaani", "sherwani"], ["शेरवानी", "sherwani"], ["gaun", "gown"], ["गाउन", "gown"],
@@ -55,6 +63,8 @@ async function main() {
   await up(db.ageRange, ageRanges);
   await up(db.forWhom, forWhom);
   await up(db.setPiece, setPieces);
+  await up(db.fabric, fabrics);
+  await up(db.work, works);
   for (const [i, [slug, nameEn, nameHi, hex]] of colours.entries()) {
     const data = { slug, nameEn, nameHi, hex, sortOrder: i };
     await db.colour.upsert({ where: { slug }, create: data, update: data });

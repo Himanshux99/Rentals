@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { BadgeCheck, CalendarHeart, Layers, MapPin, Store, Users } from "lucide-react";
+import { BadgeCheck, CalendarHeart, Gem, Layers, MapPin, Scissors, Store, Users } from "lucide-react";
 import { AppBar } from "@/components/app/app-bar";
 import { ChipLink } from "@/components/app/chip-link";
 import { AvailabilityBadge } from "@/components/app/product-card";
@@ -59,6 +59,8 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
   ].filter((x): x is string[] => !!x);
   const facts = [
     { icon: Layers, label: t("setPieces"), value: d.setPieces.map(name).join(", ") },
+    { icon: Scissors, label: t("fabrics"), value: d.fabrics.map(name).join(", ") },
+    { icon: Gem, label: t("works"), value: d.works.map(name).join(", ") },
     { icon: CalendarHeart, label: t("occasions"), value: d.occasions.map(name).join(", ") },
     { icon: Users, label: t("forWhom"), value: [...d.forWhom.map(name), ...d.ageRanges.map(name)].join(", ") },
   ].filter((f) => f.value);
@@ -78,19 +80,26 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
             </p>
           </div>
 
-          {d.products.length > 1 && (
-            <section className="flex flex-col gap-2">
-              <h2 className="text-lg font-semibold">{t("colours")}</h2>
-              <div className="flex flex-wrap gap-2">
-                {d.products.map((s) => (
-                  <ChipLink key={s.code} href={`/p/${s.code}`} active={s.code === p.code} className="px-3">
-                    <span className="size-5 rounded-full border border-border" style={{ backgroundColor: s.colour.hex }} aria-hidden />
-                    {name(s.colour)}
-                  </ChipLink>
-                ))}
-              </div>
-            </section>
-          )}
+          <section className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold">{t("colours")}</h2>
+            <div className="flex flex-wrap gap-2">
+              {d.products.length > 1
+                ? d.products.map((s) => (
+                    <ChipLink key={s.code} href={`/p/${s.code}`} active={s.code === p.code} className="px-3">
+                      {s.colours.map((c) => (
+                        <span key={c.id} className="size-5 rounded-full border border-border" style={{ backgroundColor: c.hex }} aria-hidden />
+                      ))}
+                      {s.colours.map(name).join(", ")}
+                    </ChipLink>
+                  ))
+                : p.colours.map((c) => (
+                    <span key={c.id} className="inline-flex h-12 items-center gap-2 bg-card px-3 text-base">
+                      <span className="size-5 rounded-full border border-border" style={{ backgroundColor: c.hex }} aria-hidden />
+                      {name(c)}
+                    </span>
+                  ))}
+            </div>
+          </section>
 
           <dl className="grid grid-cols-2 gap-px bg-border">
             {prices.map(([k, v]) => (

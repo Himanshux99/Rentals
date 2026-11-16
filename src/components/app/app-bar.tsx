@@ -12,25 +12,25 @@ export async function AppBar({ signedIn = false, home = "/" }: { signedIn?: bool
   return (
     <header className="bg-[var(--navy)] text-white shadow-[var(--shadow-card)]">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-2 sm:px-8">
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center">
         <BackButton label={t("back")} />
         <Wordmark href={home} />
       </div>
-      <div className="flex items-center">
+      <div className="flex shrink-0 items-center">
         {!signedIn && (
-          <Button variant="ghost" nativeButton={false} render={<Link href="/saved" />} className="h-12 gap-2 px-3 text-base text-white hover:bg-white/10 hover:text-white">
+          <Button variant="ghost" nativeButton={false} render={<Link href="/saved" />} className="h-12 min-w-12 gap-2 px-2.5 text-base text-white hover:bg-white/10 hover:text-white">
             <Heart className="size-5" />
             <span className="sr-only sm:not-sr-only">{t("saved")}</span>
           </Button>
         )}
         {!signedIn && (
-          <Button variant="ghost" nativeButton={false} render={<Link href="/sell" />} className="h-12 gap-2 px-3 text-base text-white hover:bg-white/10 hover:text-white">
+          <Button variant="ghost" nativeButton={false} render={<Link href="/sell" />} className="h-12 min-w-12 gap-2 px-2.5 text-base text-white hover:bg-white/10 hover:text-white">
             <Store className="size-5" />
             <span className="sr-only sm:not-sr-only">{t("sellerAccount")}</span>
           </Button>
         )}
         {signedIn && (
-          <Button variant="ghost" nativeButton={false} render={<Link href="/" />} className="h-12 gap-2 px-3 text-base text-white hover:bg-white/10 hover:text-white">
+          <Button variant="ghost" nativeButton={false} render={<Link href="/" />} className="h-12 min-w-12 gap-2 px-2.5 text-base text-white hover:bg-white/10 hover:text-white">
             <Store className="size-5" />
             <span className="sr-only sm:not-sr-only">{t("customerSite")}</span>
           </Button>
@@ -38,7 +38,7 @@ export async function AppBar({ signedIn = false, home = "/" }: { signedIn?: bool
         <LanguageToggle />
         {signedIn && (
           <form action={signOutAction}>
-            <Button type="submit" variant="ghost" className="h-12 gap-2 px-3 text-base text-white hover:bg-white/10 hover:text-white">
+            <Button type="submit" variant="ghost" className="h-12 min-w-12 gap-2 px-2.5 text-base text-white hover:bg-white/10 hover:text-white">
               <LogOut className="size-5" />
               <span className="sr-only sm:not-sr-only">{t("signOut")}</span>
             </Button>

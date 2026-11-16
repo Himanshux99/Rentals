@@ -1,11 +1,15 @@
 import Link from "next/link";
-import { Shirt } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-export function Wordmark({ href = "/" }: { href?: string }) {
+// Lotus alone on phones (room for the bar's icons), lotus and name from sm up.
+export async function Wordmark({ href = "/" }: { href?: string }) {
+  const t = await getTranslations("common");
   return (
-    <Link href={href} className="inline-flex items-center gap-2 font-heading text-2xl font-semibold tracking-tight text-white">
-      <Shirt className="size-6 text-[var(--gold)]" aria-hidden />
-      Rentals
+    <Link href={href} className="inline-flex h-12 shrink-0 items-center" aria-label={t("appName")}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/vastra-mark.png" alt="" className="h-8 w-auto sm:hidden" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/vastra-logo.png" alt="" className="hidden h-10 w-auto sm:block" />
     </Link>
   );
 }

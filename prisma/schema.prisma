@@ -168,6 +168,8 @@ model Design {
   ageRanges       AgeRange[]
   occasions       Occasion[]
   setPieces       SetPiece[]
+  fabrics         Fabric[]
+  works           Work[]
   description     String?
   // rupees; at least one of the three prices is required (checked in the service)
   rentPerDay      Int?
@@ -185,8 +187,7 @@ model Product {
   designId          String
   design            Design         @relation(fields: [designId], references: [id], onDelete: Cascade)
   code              String         @unique
-  colourId          String
-  colour            Colour         @relation(fields: [colourId], references: [id])
+  colours           Colour[]
   titleEn           String
   titleHi           String
   isHidden          Boolean        @default(false)
@@ -287,6 +288,26 @@ model AgeRange {
 }
 
 model ForWhom {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nameEn    String
+  nameHi    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  designs   Design[]
+}
+
+model Fabric {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nameEn    String
+  nameHi    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  designs   Design[]
+}
+
+model Work {
   id        String   @id @default(cuid())
   slug      String   @unique
   nameEn    String

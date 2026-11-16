@@ -118,7 +118,7 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
                 )}
 
                 <div className="flex flex-col gap-4">
-                  <Link href={`/p/${p.code}`} className="relative block aspect-square w-full bg-muted">
+                  <Link href={`/p/${p.code}`} aria-label={hi ? p.titleHi : p.titleEn} className="relative block aspect-square w-full bg-muted">
                     {p.images[0] && <Image src={imageSrc(p.images[0].key)} alt="" fill sizes="(min-width: 768px) 48rem, 100vw" className="object-cover" />}
                   </Link>
                   <div className="flex min-w-0 flex-col gap-1">

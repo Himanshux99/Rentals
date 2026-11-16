@@ -11,81 +11,93 @@ export type NewDesign = {
   ageRangeIds: string[];
   occasionIds: string[];
   setPieceIds: string[];
+  fabricIds: string[];
+  workIds: string[];
+  colourIds: string[];
   rentPerDay: number | null;
   rentPerWeek: number | null;
   sellPrice: number | null;
   securityDeposit: number | null;
   description: string | null;
-  colours: { colourId: string; images: { key: string; ogKey: string }[]; sizes: { sizeId: string; stock: number }[] }[];
+  images: { key: string; ogKey: string }[];
+  sizes: { sizeId: string; stock: number }[];
 };
 
 const active = { where: { isActive: true }, orderBy: { sortOrder: "asc" as const } };
 
 /** Every option list the upload form shows. */
 export async function listProductOptions() {
-  const [categories, forWhom, ageRanges, occasions, setPieces, colours, sizes] = await Promise.all([
+  const [categories, forWhom, ageRanges, occasions, setPieces, fabrics, works, colours, sizes] = await Promise.all([
     db.category.findMany(active),
     db.forWhom.findMany(active),
     db.ageRange.findMany(active),
     db.occasion.findMany(active),
     db.setPiece.findMany(active),
+    db.fabric.findMany(active),
+    db.work.findMany(active),
     db.colour.findMany(active),
     db.size.findMany(active),
   ]);
-  return { categories, forWhom, ageRanges, occasions, setPieces, colours, sizes };
+  return { categories, forWhom, ageRanges, occasions, setPieces, fabrics, works, colours, sizes };
 }
 
-/** One Design with one live Product per colour (SPEC §5). Returns the new product codes. */
-export async function createDesign(shopId: string, actorId: string, input: NewDesign) {
+function checkInput(shopId: string, input: NewDesign) {
   if (input.rentPerDay == null && input.rentPerWeek == null && input.sellPrice == null) throw new Error("no price");
   const prefix = productPrefix(shopId);
-  for (const c of input.colours)
-    for (const img of c.images)
-      if (!isOwnKey(img.key, prefix) || !isOwnKey(img.ogKey, prefix)) throw new Error("image key not owned by shop");
+  for (const img of input.images) if (!isOwnKey(img.key, prefix) || !isOwnKey(img.ogKey, prefix)) throw new Error("image key not owned by shop");
+}
 
+/** Category, for-whom and colours (in list order) that make the title. Throws on unknown ids. */
+async function titleParts(input: NewDesign) {
   const [category, forWhom, colours] = await Promise.all([
     db.category.findUniqueOrThrow({ where: { id: input.categoryId } }),
     db.forWhom.findUniqueOrThrow({ where: { id: input.forWhomId } }),
-    db.colour.findMany({ where: { id: { in: input.colours.map((c) => c.colourId) } } }),
+    db.colour.findMany({ where: { id: { in: input.colourIds } }, orderBy: { sortOrder: "asc" } }),
   ]);
-  const ids = (list: string[]) => ({ connect: list.map((id) => ({ id })) });
+  if (colours.length !== new Set(input.colourIds).size) throw new Error("unknown colour");
+  return { category, forWhom, colours };
+}
+
+/** Choice and price fields of a Design; `op` is "connect" on create, "set" on edit. */
+const designData = (input: NewDesign, op: "connect" | "set") => {
+  const ids = (list: string[]) => ({ [op]: list.map((id) => ({ id })) });
+  return {
+    categoryId: input.categoryId,
+    forWhom: ids([input.forWhomId]),
+    ageRanges: ids(input.ageRangeIds),
+    occasions: ids(input.occasionIds),
+    setPieces: ids(input.setPieceIds),
+    fabrics: ids(input.fabricIds),
+    works: ids(input.workIds),
+    rentPerDay: input.rentPerDay,
+    rentPerWeek: input.rentPerWeek,
+    sellPrice: input.sellPrice,
+    securityDeposit: input.securityDeposit,
+    description: input.description,
+  };
+};
+
+/** One Design with one live Product (any number of colours). Returns the new product code. */
+export async function createDesign(shopId: string, actorId: string, input: NewDesign) {
+  checkInput(shopId, input);
+  const { category, forWhom, colours } = await titleParts(input);
 
   return db.$transaction(
     async (tx) => {
-      const design = await tx.design.create({
+      const design = await tx.design.create({ data: { shopId, ...designData(input, "connect") } });
+      const [{ n }] = await tx.$queryRaw<{ n: number }[]>`SELECT nextval('product_code_seq')::int AS n`;
+      const product = await tx.product.create({
         data: {
-          shopId,
-          categoryId: category.id,
-          forWhom: ids([forWhom.id]),
-          ageRanges: ids(input.ageRangeIds),
-          occasions: ids(input.occasionIds),
-          setPieces: ids(input.setPieceIds),
-          rentPerDay: input.rentPerDay,
-          rentPerWeek: input.rentPerWeek,
-          sellPrice: input.sellPrice,
-          securityDeposit: input.securityDeposit,
-          description: input.description,
+          designId: design.id,
+          code: productCode(n),
+          colours: { connect: colours.map((c) => ({ id: c.id })) },
+          ...productTitle(category, colours, forWhom),
+          sizes: { create: input.sizes.map((s) => ({ sizeId: s.sizeId, stockCount: s.stock, availableCount: s.stock })) },
+          images: { create: input.images.map((img, i) => ({ key: img.key, ogKey: img.ogKey, sortOrder: i })) },
         },
       });
-      const codes: string[] = [];
-      for (const c of input.colours) {
-        const colour = colours.find((x) => x.id === c.colourId);
-        if (!colour) throw new Error("unknown colour");
-        const [{ n }] = await tx.$queryRaw<{ n: number }[]>`SELECT nextval('product_code_seq')::int AS n`;
-        const product = await tx.product.create({
-          data: {
-            designId: design.id,
-            code: productCode(n),
-            colourId: colour.id,
-            ...productTitle(category, colour, forWhom),
-            sizes: { create: c.sizes.map((s) => ({ sizeId: s.sizeId, stockCount: s.stock, availableCount: s.stock })) },
-            images: { create: c.images.map((img, i) => ({ key: img.key, ogKey: img.ogKey, sortOrder: i })) },
-          },
-        });
-        codes.push(product.code);
-      }
-      await audit(tx, { actorId, action: "design.create", entity: "Design", entityId: design.id, after: { ...input, codes } });
-      return codes;
+      await audit(tx, { actorId, action: "design.create", entity: "Design", entityId: design.id, after: { ...input, code: product.code } });
+      return product.code;
     },
     { timeout: 20_000 },
   );
@@ -179,7 +191,7 @@ export async function confirmFresh(shopId: string, actorId: string, productId: s
   });
 }
 
-/** Deletes the product and its photos; the design goes too when it has no colours left. */
+/** Deletes the product and its photos; the design goes too when it has no products left. */
 export async function deleteProduct(shopId: string, actorId: string, productId: string) {
   const p = await ownedProduct(shopId, productId);
   await db.$transaction(async (tx) => {
@@ -191,60 +203,42 @@ export async function deleteProduct(shopId: string, actorId: string, productId: 
   await Promise.allSettled(p.images.flatMap((i) => [storage.delete(i.key), storage.delete(i.ogKey)]));
 }
 
-/** For Edit and Duplicate: the design's shared fields plus one product's photos and sizes. */
+/** For Edit and Duplicate: the design's fields plus the product's colours, photos and sizes. */
 export function getProductForEdit(shopId: string, productId: string) {
   return db.product.findFirst({
     where: { id: productId, design: { shopId } },
     include: {
       images: { orderBy: { sortOrder: "asc" } },
       sizes: true,
-      design: { include: { forWhom: true, ageRanges: true, occasions: true, setPieces: true } },
+      colours: true,
+      design: { include: { forWhom: true, ageRanges: true, occasions: true, setPieces: true, fabrics: true, works: true } },
     },
   });
 }
 
 /**
- * Edit: updates the shared design (titles of every colour follow category / for-whom) and this
- * product's photos and sizes. Stock changes keep how many pieces are out on rent.
+ * Edit: updates the design and this product's colours, photos and sizes. Older designs with several
+ * one-colour products keep their siblings' titles in step. Stock changes keep how many pieces are out on rent.
  */
 export async function updateProduct(shopId: string, actorId: string, productId: string, input: NewDesign) {
   const p = await ownedProduct(shopId, productId);
-  const c = input.colours[0];
-  if (!c || input.colours.length !== 1 || c.colourId !== p.colourId) throw new Error("edit keeps the product's colour");
-  if (input.rentPerDay == null && input.rentPerWeek == null && input.sellPrice == null) throw new Error("no price");
-  const prefix = productPrefix(shopId);
-  for (const img of c.images) if (!isOwnKey(img.key, prefix) || !isOwnKey(img.ogKey, prefix)) throw new Error("image key not owned by shop");
-
-  const [category, forWhom] = await Promise.all([
-    db.category.findUniqueOrThrow({ where: { id: input.categoryId } }),
-    db.forWhom.findUniqueOrThrow({ where: { id: input.forWhomId } }),
-  ]);
-  const set = (list: string[]) => ({ set: list.map((id) => ({ id })) });
-  const removed = p.images.filter((i) => !c.images.some((n) => n.key === i.key));
+  checkInput(shopId, input);
+  const { category, forWhom, colours } = await titleParts(input);
+  const removed = p.images.filter((i) => !input.images.some((n) => n.key === i.key));
 
   await db.$transaction(
     async (tx) => {
-      const before = await tx.design.findUniqueOrThrow({ where: { id: p.designId }, include: { products: { include: { colour: true, sizes: true } } } });
-      await tx.design.update({
+      const before = await tx.design.findUniqueOrThrow({
         where: { id: p.designId },
-        data: {
-          categoryId: category.id,
-          forWhom: set([forWhom.id]),
-          ageRanges: set(input.ageRangeIds),
-          occasions: set(input.occasionIds),
-          setPieces: set(input.setPieceIds),
-          rentPerDay: input.rentPerDay,
-          rentPerWeek: input.rentPerWeek,
-          sellPrice: input.sellPrice,
-          securityDeposit: input.securityDeposit,
-          description: input.description,
-        },
+        include: { products: { include: { colours: { orderBy: { sortOrder: "asc" } }, sizes: true } } },
       });
-      for (const sib of before.products) await tx.product.update({ where: { id: sib.id }, data: productTitle(category, sib.colour, forWhom) });
+      await tx.design.update({ where: { id: p.designId }, data: designData(input, "set") });
+      for (const sib of before.products)
+        if (sib.id !== p.id) await tx.product.update({ where: { id: sib.id }, data: productTitle(category, sib.colours, forWhom) });
 
       const old = before.products.find((x) => x.id === p.id)!.sizes;
-      await tx.productSize.deleteMany({ where: { productId: p.id, sizeId: { notIn: c.sizes.map((s) => s.sizeId) } } });
-      for (const s of c.sizes) {
+      await tx.productSize.deleteMany({ where: { productId: p.id, sizeId: { notIn: input.sizes.map((s) => s.sizeId) } } });
+      for (const s of input.sizes) {
         const prev = old.find((o) => o.sizeId === s.sizeId);
         const out = prev ? prev.stockCount - prev.availableCount : 0;
         await tx.productSize.upsert({
@@ -254,8 +248,11 @@ export async function updateProduct(shopId: string, actorId: string, productId: 
         });
       }
       await tx.productImage.deleteMany({ where: { productId: p.id } });
-      await tx.productImage.createMany({ data: c.images.map((img, i) => ({ productId: p.id, key: img.key, ogKey: img.ogKey, sortOrder: i })) });
-      await tx.product.update({ where: { id: p.id }, data: { lastSellerTouchAt: new Date() } });
+      await tx.productImage.createMany({ data: input.images.map((img, i) => ({ productId: p.id, key: img.key, ogKey: img.ogKey, sortOrder: i })) });
+      await tx.product.update({
+        where: { id: p.id },
+        data: { colours: { set: colours.map((c) => ({ id: c.id })) }, ...productTitle(category, colours, forWhom), lastSellerTouchAt: new Date() },
+      });
       await audit(tx, { actorId, action: "product.edit", entity: "Product", entityId: p.id, before, after: input });
     },
     { timeout: 20_000 },

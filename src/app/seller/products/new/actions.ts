@@ -7,8 +7,7 @@ import { createDesign, updateProduct, type NewDesign } from "@/server/services/p
 
 // Error values are message keys in the "product" namespace; the form translates them.
 export type ProductFormState = {
-  errors?: Partial<Record<"category" | "forWhom" | "colours" | "price" | "form", string>>;
-  colourErrors?: Record<string, string>;
+  errors?: Partial<Record<"category" | "forWhom" | "colours" | "images" | "sizes" | "price" | "form", string>>;
 };
 
 const id = z.string().min(1).max(40);
@@ -20,28 +19,23 @@ const schema = z
     ageRangeIds: z.array(id).max(20),
     occasionIds: z.array(id).max(20),
     setPieceIds: z.array(id).max(20),
+    fabricIds: z.array(id).max(20),
+    workIds: z.array(id).max(20),
+    colourIds: z.array(id).min(1).max(20),
+    images: z.array(z.object({ key: z.string().max(200), ogKey: z.string().max(200) })).min(1).max(env.NEXT_PUBLIC_MAX_IMAGES_PER_PRODUCT),
+    sizes: z.array(z.object({ sizeId: id, stock: z.number().int().min(1).max(99) })).min(1).max(20),
     rentPerDay: price,
     rentPerWeek: price,
     sellPrice: price,
     securityDeposit: price,
     description: z.string().trim().max(1000).nullable(),
-    colours: z
-      .array(
-        z.object({
-          colourId: id,
-          images: z.array(z.object({ key: z.string().max(200), ogKey: z.string().max(200) })).min(1).max(env.NEXT_PUBLIC_MAX_IMAGES_PER_PRODUCT),
-          sizes: z.array(z.object({ sizeId: id, stock: z.number().int().min(1).max(99) })).min(1).max(20),
-        }),
-      )
-      .min(1)
-      .max(20),
   })
   .refine((d) => d.rentPerDay ?? d.rentPerWeek ?? d.sellPrice, { path: ["price"] });
 
 type Parsed = { ok: true; data: NewDesign; productId?: string } | { ok: false; state: ProductFormState };
 
 function parse(formData: FormData): Parsed {
-  let raw: { colours?: { colourId?: string }[]; productId?: unknown };
+  let raw: { productId?: unknown };
   try {
     raw = JSON.parse(String(formData.get("payload")));
   } catch {
@@ -49,17 +43,11 @@ function parse(formData: FormData): Parsed {
   }
   const parsed = schema.safeParse(raw);
   if (!parsed.success) {
-    const state: Required<ProductFormState> = { errors: {}, colourErrors: {} };
+    const state: Required<ProductFormState> = { errors: {} };
+    const keys = { categoryId: ["category", "pickCategory"], forWhomId: ["forWhom", "pickForWhom"], colourIds: ["colours", "pickColour"], images: ["images", "needImage"], sizes: ["sizes", "needSize"], price: ["price", "needPrice"] } as const;
     for (const { path } of parsed.error.issues) {
-      const [field, i, sub] = path;
-      if (field === "categoryId") state.errors.category = "pickCategory";
-      else if (field === "forWhomId") state.errors.forWhom = "pickForWhom";
-      else if (field === "price") state.errors.price = "needPrice";
-      else if (field === "colours" && typeof i === "number" && (sub === "images" || sub === "sizes")) {
-        const cid = raw.colours?.[i]?.colourId;
-        if (cid) state.colourErrors[cid] ??= sub === "images" ? "needImage" : "needSize";
-      } else if (field === "colours") state.errors.colours = "pickColour";
-      else state.errors.form = "failed";
+      const [field, msg] = keys[path[0] as keyof typeof keys] ?? ["form", "failed"];
+      state.errors[field] = msg;
     }
     return { ok: false, state };
   }
@@ -70,14 +58,13 @@ export async function createDesignAction(_prev: ProductFormState, formData: Form
   const { shop, user } = await requireLiveShop();
   const p = parse(formData);
   if (!p.ok) return p.state;
-  let codes: string[];
   try {
-    codes = await createDesign(shop.id, user.id, p.data);
+    await createDesign(shop.id, user.id, p.data);
   } catch (e) {
     console.error(e);
     return { errors: { form: "failed" } };
   }
-  redirect(`/seller?added=${codes.length}`);
+  redirect("/seller?added=1");
 }
 
 export async function updateProductAction(_prev: ProductFormState, formData: FormData): Promise<ProductFormState> {

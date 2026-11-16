@@ -55,7 +55,7 @@ export const waShare = (text: string) => `https://api.whatsapp.com/send?text=${e
 
 // ---------- Listing filters, kept in the URL so chips are plain links ----------
 
-export const LIST_KEYS = ["occasion", "category", "colour", "for", "size", "age", "area"] as const;
+export const LIST_KEYS = ["occasion", "category", "colour", "for", "size", "age", "area", "fabric", "work"] as const;
 export type ListKey = (typeof LIST_KEYS)[number];
 export const SORTS = ["recommended", "newest", "priceAsc", "priceDesc"] as const;
 export type Sort = (typeof SORTS)[number];

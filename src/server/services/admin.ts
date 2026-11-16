@@ -46,7 +46,7 @@ export async function closeReport(reportId: string, status: "resolved" | "dismis
 
 // ---------- Option lists (SPEC §9) ----------
 
-export const OPTION_LISTS = ["category", "occasion", "colour", "size", "ageRange", "forWhom", "setPiece", "city", "area"] as const;
+export const OPTION_LISTS = ["category", "occasion", "colour", "size", "ageRange", "forWhom", "setPiece", "fabric", "work", "city", "area"] as const;
 export type OptionList = (typeof OPTION_LISTS)[number];
 export type OptionRow = { id: string; slug: string; nameEn: string; nameHi: string; sortOrder: number; isActive: boolean; hex?: string; cityId?: string };
 export type OptionInput = { nameEn: string; nameHi: string; sortOrder: number; isActive: boolean; hex?: string };

@@ -21,7 +21,7 @@
   },
   "home": {
     "title": "Dresses for rent in Barwani",
-    "forShops": "List your shop",
+    "forShops": "Rent out your dresses",
     "cityLabel": "Barwani",
     "body": "Wedding and festival outfits from local shops, sent straight to their WhatsApp.",
     "titleAccent": "for every occasion",
@@ -210,7 +210,9 @@
     "action": "Action",
     "entity": "Item",
     "change": "Change",
-    "details": "Show"
+    "details": "Show",
+    "list_fabric": "Fabrics",
+    "list_work": "Work types"
   },
   "upload": {
     "add": "Add photos",
@@ -238,7 +240,7 @@
   },
   "product": {
     "title": "Add a dress",
-    "body": "Tap to choose. If the dress comes in more colours, pick them all: each colour gets its own listing.",
+    "body": "Tap to choose. Add photos, then pick what fits.",
     "category": "What is it?",
     "forWhom": "For whom?",
     "ageRange": "Age",
@@ -246,7 +248,7 @@
     "setPieces": "Pieces in the set",
     "pickAny": "Pick all that fit.",
     "colours": "Colours",
-    "coloursHelp": "Pick every colour you have of this dress.",
+    "coloursHelp": "Pick every colour in this dress.",
     "photos": "Photos",
     "sizes": "Sizes you have",
     "stockFor": "How many in {size}?",
@@ -259,21 +261,23 @@
     "sellPrice": "Selling price",
     "securityDeposit": "Security deposit (optional)",
     "description": "Anything else? (optional)",
-    "save": "{count, plural, one {Save and go live} other {Save # dresses and go live}}",
+    "save": "Save and go live",
     "saving": "Saving…",
     "waitUpload": "Photos uploading…",
     "pickCategory": "Pick what the dress is.",
     "pickForWhom": "Pick who it is for.",
     "pickColour": "Pick at least one colour.",
     "needPrice": "Fill in at least one price.",
-    "needImage": "Add at least one photo for this colour.",
-    "needSize": "Pick at least one size for this colour.",
+    "needImage": "Add at least one photo.",
+    "needSize": "Pick at least one size.",
     "failed": "Couldn't save. Check your connection and try again.",
     "duplicateTitle": "Copy a dress",
-    "duplicateBody": "The details are copied. Pick the colours, photos and sizes for the new one.",
+    "duplicateBody": "The details are copied. Add photos and sizes for the new one.",
     "editTitle": "Edit dress",
-    "editBody": "Shared details (type, occasions, price, description) change for every colour of this dress.",
-    "saveChanges": "Save changes"
+    "editBody": "Change anything, then save.",
+    "saveChanges": "Save changes",
+    "fabrics": "Fabric",
+    "works": "Work"
   },
   "catalog": {
     "perDay": "₹{amount} / din",
@@ -306,7 +310,9 @@
     "emptyFiltered": "Try removing a filter or searching for something else.",
     "emptyBody": "Shops are adding dresses. Check again soon.",
     "loadMore": "Show {count} more",
-    "rentNow": "Rent now"
+    "rentNow": "Rent now",
+    "fabric": "Fabric",
+    "work": "Work"
   },
   "product_page": {
     "pickSize": "Size",
@@ -346,7 +352,9 @@
     "setPieces": "In the set",
     "occasions": "Occasions",
     "forWhom": "For",
-    "verified": "Verified shop"
+    "verified": "Verified shop",
+    "fabrics": "Fabric",
+    "works": "Work"
   },
   "shop_page": {
     "verified": "Verified shop",
@@ -380,7 +388,7 @@
     },
     "for-shops": {
       "title": "For shops",
-      "cta": "List your shop",
+      "cta": "Rent out your dresses",
       "body": [
         "Show your dresses to everyone in Barwani, free. Customers message you on WhatsApp.",
         "Sign in with Google, confirm your mobile number once, and fill in one short form. We check every shop and usually approve it within a day.",

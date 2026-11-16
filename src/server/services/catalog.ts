@@ -46,7 +46,7 @@ export async function listCatalog(f: Filters, scope: { shopId?: string; codes?: 
     ...visibleProduct,
     ...(ids ? { id: { in: ids } } : {}),
     ...(scope.codes ? { code: { in: scope.codes } } : {}),
-    colour: f.colour.length ? { slug: { in: f.colour } } : undefined,
+    colours: some(f.colour),
     sizes: f.size.length ? { some: { size: { slug: { in: f.size } } } } : undefined,
     design: {
       shop: { status: "approved", deletedAt: null, ...(scope.shopId ? { id: scope.shopId } : {}), ...(f.area.length ? { area: { slug: { in: f.area } } } : {}) },
@@ -54,6 +54,8 @@ export async function listCatalog(f: Filters, scope: { shopId?: string; codes?: 
       occasions: some(f.occasion),
       forWhom: some(f.for),
       ageRanges: some(f.age),
+      fabrics: some(f.fabric),
+      works: some(f.work),
       ...(f.mode === "rent" ? { OR: [{ rentPerDay: { not: null } }, { rentPerWeek: { not: null } }] } : {}),
       ...(f.mode === "buy" ? { sellPrice: { not: null } } : {}),
     },
@@ -73,7 +75,7 @@ export async function listCatalog(f: Filters, scope: { shopId?: string; codes?: 
 }
 
 /**
- * Product ids matching every word of `q` in titles, category, colour or occasion names (both languages).
+ * Product ids matching every word of `q` in titles, category, colour, occasion, fabric or work names (both languages).
  * Each word is expanded through SearchSynonym and matched by substring or trigram similarity, which
  * tolerates spellings like "lehnga".
  */
@@ -86,13 +88,18 @@ export async function searchProductIds(q: string): Promise<string[]> {
   const conds = groups.map((g) => Prisma.sql`(${Prisma.join(g.map(match), " OR ")})`);
   const rows = await db.$queryRaw<{ id: string }[]>`
     SELECT id FROM (
-      SELECT p.id, lower(concat_ws(' ', p."titleEn", p."titleHi", c."nameEn", c."nameHi", c.slug, co."nameEn", co."nameHi",
+      SELECT p.id, lower(concat_ws(' ', p."titleEn", p."titleHi", c."nameEn", c."nameHi", c.slug,
+        (SELECT string_agg(co."nameEn" || ' ' || co."nameHi" || ' ' || co.slug, ' ')
+           FROM "_ColourToProduct" x JOIN "Colour" co ON co.id = x."A" WHERE x."B" = p.id),
         (SELECT string_agg(o."nameEn" || ' ' || o."nameHi" || ' ' || o.slug, ' ')
-           FROM "_DesignToOccasion" x JOIN "Occasion" o ON o.id = x."B" WHERE x."A" = d.id))) AS doc
+           FROM "_DesignToOccasion" x JOIN "Occasion" o ON o.id = x."B" WHERE x."A" = d.id),
+        (SELECT string_agg(o."nameEn" || ' ' || o."nameHi" || ' ' || o.slug, ' ')
+           FROM "_DesignToFabric" x JOIN "Fabric" o ON o.id = x."B" WHERE x."A" = d.id),
+        (SELECT string_agg(o."nameEn" || ' ' || o."nameHi" || ' ' || o.slug, ' ')
+           FROM "_DesignToWork" x JOIN "Work" o ON o.id = x."B" WHERE x."A" = d.id))) AS doc
       FROM "Product" p
       JOIN "Design" d ON d.id = p."designId"
       JOIN "Category" c ON c.id = d."categoryId"
-      JOIN "Colour" co ON co.id = p."colourId"
       WHERE p."isHidden" = false AND p."hiddenByAdmin" = false
     ) s
     WHERE ${Prisma.join(conds, " AND ")}`;
@@ -102,23 +109,25 @@ export async function searchProductIds(q: string): Promise<string[]> {
 /** Option lists for the filter chips, plus the default city's areas. */
 export async function listFacets() {
   const active = { where: { isActive: true }, orderBy: { sortOrder: "asc" as const }, select: { slug: true, nameEn: true, nameHi: true } };
-  const [categories, occasions, colours, forWhom, sizes, ageRanges, city] = await Promise.all([
+  const [categories, occasions, colours, forWhom, sizes, ageRanges, fabrics, works, city] = await Promise.all([
     db.category.findMany(active),
     db.occasion.findMany(active),
     db.colour.findMany({ ...active, select: { ...active.select, hex: true } }),
     db.forWhom.findMany(active),
     db.size.findMany(active),
     db.ageRange.findMany(active),
+    db.fabric.findMany(active),
+    db.work.findMany(active),
     db.city.findUnique({ where: { slug: env.DEFAULT_CITY_SLUG }, include: { areas: active } }),
   ]);
-  return { categories, occasions, colours, forWhom, sizes, ageRanges, areas: city?.areas ?? [], city };
+  return { categories, occasions, colours, forWhom, sizes, ageRanges, fabrics, works, areas: city?.areas ?? [], city };
 }
 
 export function getProductByCode(code: string) {
   return db.product.findFirst({
     where: { ...visibleProduct, code },
     include: {
-      colour: true,
+      colours: { orderBy: { sortOrder: "asc" } },
       images: { orderBy: { sortOrder: "asc" } },
       sizes: { include: { size: true }, orderBy: { size: { sortOrder: "asc" } } },
       design: {
@@ -128,8 +137,11 @@ export function getProductByCode(code: string) {
           ageRanges: true,
           occasions: true,
           setPieces: true,
+          fabrics: true,
+          works: true,
           shop: { include: { area: true } },
-          products: { where: { isHidden: false, hiddenByAdmin: false }, select: { code: true, colour: true }, orderBy: { createdAt: "asc" } },
+          // older designs listed each colour as its own product; this links them
+          products: { where: { isHidden: false, hiddenByAdmin: false }, select: { code: true, colours: true }, orderBy: { createdAt: "asc" } },
         },
       },
     },

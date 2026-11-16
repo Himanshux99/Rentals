@@ -38,7 +38,7 @@ A mobile-first website where local dress rental shops list their clothes and use
 
 ```
 City ──< Area
-Shop (belongs to Area) ──< Design ──< Product (one per colour) ──< ProductSize
+Shop (belongs to Area) ──< Design ──< Product (one per Design for new listings) ──< ProductSize
                                          └──< ProductImage
 ```
 
@@ -53,9 +53,9 @@ Shop (belongs to Area) ──< Design ──< Product (one per colour) ──< P
 - `createdAt`, `updatedAt`
 
 ### Design
-Shared data for all colours of the same dress.
+The dress's choices and prices. New listings make one Product per Design; older designs may have one Product per colour.
 - `id`, `shopId`
-- `categoryId`, `forWhom[]`, `ageRangeIds[]`, `occasionIds[]`
+- `categoryId`, `forWhom[]`, `ageRangeIds[]`, `occasionIds[]`, `fabricIds[]`, `workIds[]`
 - `description` (optional, the only free-text field)
 - `setPieces[]`: which pieces come with it, e.g. Blouse, Skirt, Dupatta. Chosen from an option list; the count is derived.
 - **Pricing (all optional, at least one required):**
@@ -66,11 +66,11 @@ Shared data for all colours of the same dress.
 - `measurements` (JSON, reserved for later)
 
 ### Product
-One per colour. This is the thing users browse.
+This is the thing users browse.
 - `id`, `designId`
 - `code`: short public code, unique and auto-generated, e.g. `R1042`
-- `colourId`
-- `title`: auto-generated from category + colour + for-whom, in both languages, e.g. "Green Lehenga – Women" / "हरा लहंगा – महिला"
+- `colourIds[]`: one or more colours
+- `title`: auto-generated from category + colour + for-whom, in both languages, e.g. "Green Lehenga – Women" / "हरा लहंगा – महिला"; two colours "Red & Gold Lehenga – Women", three or more "Multicolour Lehenga – Women"
 - `isHidden`
 - `isFeatured` (set by admin only)
 - `lastSellerTouchAt`: updated whenever the seller edits or changes availability
@@ -87,12 +87,13 @@ Availability is tracked **per size**.
 ### ProductImage
 - `id`, `productId`, `url`, `ogUrl`, `sortOrder`
 - The first image is the cover.
-- Each colour has **its own** images.
 
 ### Option lists (admin-managed, bilingual)
 - `Category`: Lehenga, Saree, Gown, Sherwani, Kurta Set…
 - `Occasion`: Haldi, Mehendi, Wedding, Sangeet, Party, Festival…
-- `Colour`: name (hi/en) + hex value; shown as colour circles
+- `Colour`: name (hi/en) + hex value; shown as chips with a colour dot
+- `Fabric`: Silk, Georgette, Velvet, Net…
+- `Work`: Zari, Embroidery, Sequins, Mirror…
 - `Size`
 - `AgeRange`
 - `ForWhom`: Women, Men, Girls, Boys
@@ -137,20 +138,15 @@ Keep it to the fewest possible steps.
 
 Steps (one scrolling page or a short wizard, mobile-first):
 
-1. **Category:** chips
-2. **For whom:** chips
-3. **Age range:** chips (multi-select)
-4. **Occasions:** chips (multi-select)
-5. **Set pieces:** chips (multi-select)
-6. **Colours:** tap one or more colour circles.
-   - **Choosing N colours creates N Products** under one Design.
-   - Shared fields (category, occasions, price, description…) are entered once.
-   - For **each colour** the seller then sets:
-     - **Images:** multiple, chosen from the camera or gallery (the per-product image limit is a config value, decided later)
-     - **Sizes:** tap the sizes available, and set a **stock count** for each size with a +/− stepper (default 1)
+1. **Photos:** multiple, chosen from the camera or gallery (the per-product image limit is a config value)
+2. **Category:** chips
+3. **For whom:** chips
+4. **Colours:** chips with a colour dot (multi-select). One product can have several colours (e.g. red and gold).
+5. **Sizes:** tap the sizes available, and set a **stock count** for each size with a +/− stepper (default 1)
+6. **Fabric, Work, Age range, Occasions, Set pieces:** chips (multi-select). Every list is managed by admins in Option lists.
 7. **Pricing:** per day / per week / selling price. Each is optional, but at least one is required. Security deposit is optional. Use a numeric keypad.
 8. **Description:** optional text box.
-9. **Save:** the products go live immediately (the shop is already approved). A code is auto-generated for each product.
+9. **Save:** the product goes live immediately (the shop is already approved). A code is auto-generated.
 
 **Image handling:**
 - Compress in the browser before upload: WebP, max about 1600px on the long side.

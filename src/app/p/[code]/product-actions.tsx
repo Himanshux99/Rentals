@@ -80,26 +80,26 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
         </section>
       )}
 
-      <Button onClick={() => setAsk(true)} className="h-14 gap-2 bg-[#1f8a4c] text-lg text-white hover:bg-[#1f8a4c]/85">
-        <MessageCircle className="size-6" />
+      <Button onClick={() => setAsk(true)} className="h-auto min-h-14 gap-2 whitespace-normal bg-[#1f8a4c] py-2 text-center text-lg text-white hover:bg-[#1f8a4c]/85">
+        <MessageCircle className="size-6 shrink-0" />
         {t("ask")}
       </Button>
 
       <div className="grid grid-cols-2 gap-2">
-        <Button variant="outline" nativeButton={false} render={<a href={`tel:${whatsappPhone}`} />} className="h-12 gap-2 text-base">
-          <Phone className="size-5" />
+        <Button variant="outline" nativeButton={false} render={<a href={`tel:${whatsappPhone}`} />} className="h-auto min-h-12 gap-2 whitespace-normal py-2 text-center text-base">
+          <Phone className="size-5 shrink-0" />
           {t("call")}
         </Button>
-        <Button variant="outline" onClick={toggleSave} aria-pressed={saved} className="h-12 gap-2 text-base">
-          <Heart className={saved ? "size-5 fill-current text-[var(--gold)]" : "size-5"} />
+        <Button variant="outline" onClick={toggleSave} aria-pressed={saved} className="h-auto min-h-12 gap-2 whitespace-normal py-2 text-center text-base">
+          <Heart className={saved ? "size-5 shrink-0 fill-current text-[var(--gold)]" : "size-5 shrink-0"} />
           {saved ? t("saved") : t("save")}
         </Button>
-        <Button variant="outline" nativeButton={false} render={<a href={waShare(`${title} ${url}`)} target="_blank" rel="noopener noreferrer" />} className="h-12 gap-2 text-base">
-          <Share2 className="size-5" />
+        <Button variant="outline" nativeButton={false} render={<a href={waShare(`${title} ${url}`)} target="_blank" rel="noopener noreferrer" />} className="h-auto min-h-12 gap-2 whitespace-normal py-2 text-center text-base">
+          <Share2 className="size-5 shrink-0" />
           {t("share")}
         </Button>
-        <Button variant="outline" onClick={() => setReport(true)} className="h-12 gap-2 text-base">
-          <Flag className="size-5" />
+        <Button variant="outline" onClick={() => setReport(true)} className="h-auto min-h-12 gap-2 whitespace-normal py-2 text-center text-base">
+          <Flag className="size-5 shrink-0" />
           {t("report")}
         </Button>
       </div>
@@ -127,8 +127,8 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
             {t("sendHint")}
           </p>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
-            <Button onClick={send} className="h-14 gap-2 bg-[#1f8a4c] text-lg text-white hover:bg-[#1f8a4c]/85">
-              <MessageCircle className="size-6" />
+            <Button onClick={send} className="h-auto min-h-14 gap-2 whitespace-normal bg-[#1f8a4c] py-2 text-center text-lg text-white hover:bg-[#1f8a4c]/85">
+              <MessageCircle className="size-6 shrink-0" />
               {t("send")}
             </Button>
             <DialogClose render={<Button variant="ghost" className="h-12 text-base" />}>{t("cancel")}</DialogClose>

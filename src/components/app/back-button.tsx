@@ -15,10 +15,10 @@ export function BackButton({ label }: { label: string }) {
     <Button
       variant="ghost"
       onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
-      className="h-12 gap-2 px-3 text-base text-white hover:bg-white/10 hover:text-white"
+      className="h-12 min-w-12 gap-2 px-2.5 text-base text-white hover:bg-white/10 hover:text-white"
     >
       <ArrowLeft className="size-5" />
-      {label}
+      <span className="sr-only sm:not-sr-only">{label}</span>
     </Button>
   );
 }

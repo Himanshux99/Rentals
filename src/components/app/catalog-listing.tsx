@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowDownUp, Search, SearchX, SlidersHorizontal } from "lucide-react";
+import { ArrowDownUp, Search, SearchX, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@/lib/catalog";
 import { listCatalog, listFacets, PAGE_SIZE } from "@/server/services/catalog";
 import { ChipLink } from "./chip-link";
+import { PriceSlider } from "./price-slider";
 import { ProductCard, ProductGrid } from "./product-card";
 
 type Opt = { slug: string; nameEn: string; nameHi: string };
@@ -53,7 +54,7 @@ export async function CatalogListing({
       </ChipLink>
     ));
   const panelCount =
-    (["size", "age", "area"] as const).reduce((n, k) => n + f[k].length, 0) +
+    (["size", "age", "area", "fabric", "work"] as const).reduce((n, k) => n + f[k].length, 0) +
     (f.min != null || f.max != null ? 1 : 0) +
     (f.mode ? 1 : 0);
   const anyFilter =
@@ -92,6 +93,14 @@ export async function CatalogListing({
           {row("age", facets.ageRanges)}
         </div>
       </section>
+      <section className="flex flex-col gap-2">
+        <h3 className="text-base font-semibold">{t("fabric")}</h3>
+        <div className="flex flex-wrap gap-2">{row("fabric", facets.fabrics)}</div>
+      </section>
+      <section className="flex flex-col gap-2">
+        <h3 className="text-base font-semibold">{t("work")}</h3>
+        <div className="flex flex-wrap gap-2">{row("work", facets.works)}</div>
+      </section>
       {!shopId && (
         <section className="flex flex-col gap-2">
           <h3 className="text-base font-semibold">{t("area")}</h3>
@@ -107,27 +116,7 @@ export async function CatalogListing({
         ))}
         {f.q && <input type="hidden" name="q" value={f.q} />}
         {f.mode && <input type="hidden" name="mode" value={f.mode} />}
-        <div className="flex items-center gap-2">
-          <Input
-            name="min"
-            inputMode="numeric"
-            pattern="\d*"
-            defaultValue={f.min ?? ""}
-            placeholder={t("min")}
-            aria-label={t("min")}
-            className="h-12 text-lg md:text-lg"
-          />
-          <span>–</span>
-          <Input
-            name="max"
-            inputMode="numeric"
-            pattern="\d*"
-            defaultValue={f.max ?? ""}
-            placeholder={t("max")}
-            aria-label={t("max")}
-            className="h-12 text-lg md:text-lg"
-          />
-        </div>
+        <PriceSlider min={f.min} max={f.max} />
         <Button type="submit" className="h-12 text-base">
           {t("apply")}
         </Button>
@@ -238,6 +227,17 @@ export async function CatalogListing({
                 {panel}
               </SheetContent>
             </Sheet>
+            {anyFilter && (
+              <Button
+                variant="ghost"
+                nativeButton={false}
+                render={<Link href={path} />}
+                className="h-12 gap-2 text-base"
+              >
+                <X className="size-5" />
+                {t("clear")}
+              </Button>
+            )}
             <div className="flex items-center gap-1 overflow-x-auto">
               <ArrowDownUp className="size-5 shrink-0" aria-label={t("sort")} />
               {SORTS.map((s) => (

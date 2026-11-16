@@ -9,7 +9,7 @@ import { ProductForm } from "./product-form";
 
 export const metadata: Metadata = { title: "Add a dress" };
 
-// ?from=<productId> is Duplicate (SPEC §6): the design's shared fields, ready for new colours and photos.
+// ?from=<productId> is Duplicate (SPEC §6): every choice copied, ready for new photos and sizes.
 export default async function NewProductPage({ searchParams }: PageProps<"/seller/products/new">) {
   const { shop } = await requireLiveShop();
   const { from } = await searchParams;
