@@ -55,10 +55,10 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/sho
           <div className="flex flex-col gap-3 p-4">
             <h1 className="flex items-center gap-2 text-3xl font-semibold sm:text-4xl">
               {shop.shopName}
-              {shop.isVerified && <BadgeCheck className="size-7 text-[var(--haldi)]" aria-label={t("verified")} />}
+              {shop.isVerified && <BadgeCheck className="size-7 text-[var(--gold)]" aria-label={t("verified")} />}
             </h1>
             <p className="flex items-center gap-2 text-lg">
-              <MapPin className="size-5 shrink-0 text-[var(--haldi)]" />
+              <MapPin className="size-5 shrink-0 text-[var(--gold)]" />
               {shop.addressLine}, {hi ? shop.area.nameHi : shop.area.nameEn}
             </p>
             <div className="flex flex-wrap gap-2">

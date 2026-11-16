@@ -96,7 +96,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
             {prices.map(([k, v]) => (
               <div key={k} className="flex flex-col bg-card p-3">
                 <dt className="text-sm text-muted-foreground">{k}</dt>
-                <dd className="text-xl font-semibold text-[var(--haldi)]">{v}</dd>
+                <dd className="text-xl font-bold text-primary">{v}</dd>
               </div>
             ))}
           </dl>
@@ -105,7 +105,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
             <ul className="flex flex-col gap-3 text-base">
               {facts.map((f) => (
                 <li key={f.label} className="flex gap-3">
-                  <f.icon className="size-5 shrink-0 text-[var(--haldi)]" />
+                  <f.icon className="size-5 shrink-0 text-[var(--gold)]" />
                   <span>
                     <span className="text-muted-foreground">{f.label}: </span>
                     {f.value}
@@ -128,11 +128,11 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
           {d.description && <p className="whitespace-pre-line text-lg">{d.description}</p>}
 
           <Link href={`/shop/${d.shop.slug}`} className="flex items-center gap-3 bg-card p-4 hover:bg-accent">
-            <Store className="size-8 shrink-0 text-[var(--haldi)]" />
+            <Store className="size-8 shrink-0 text-[var(--gold)]" />
             <span className="flex flex-col">
               <span className="flex items-center gap-1 text-lg font-semibold">
                 {d.shop.shopName}
-                {d.shop.isVerified && <BadgeCheck className="size-5 text-[var(--haldi)]" aria-label={t("verified")} />}
+                {d.shop.isVerified && <BadgeCheck className="size-5 text-[var(--gold)]" aria-label={t("verified")} />}
               </span>
               <span className="flex items-center gap-1 text-base text-muted-foreground">
                 <MapPin className="size-4" />

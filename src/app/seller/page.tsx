@@ -31,7 +31,7 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
       <section className="mx-auto w-full max-w-[34rem] bg-card">
         <Stripe />
         <div className="flex flex-col gap-5 px-6 py-8 sm:px-10">
-          <Icon className="size-10 text-[var(--haldi)]" aria-hidden />
+          <Icon className="size-10 text-[var(--gold)]" aria-hidden />
           <h1 className="text-4xl font-semibold">{t(pending ? "pendingTitle" : "suspendedTitle")}</h1>
           <p className="text-lg">{t(pending ? "pendingBody" : "suspendedBody", { shop: shop.shopName })}</p>
           <Button variant="outline" nativeButton={false} render={<Link href="/seller/settings" />} className="h-12 w-fit gap-2 text-base">
@@ -93,7 +93,7 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
 
       {products.length === 0 ? (
         <section className="flex flex-col items-start gap-3 bg-card px-6 py-10 sm:px-10">
-          <Shirt className="size-10 text-[var(--haldi)]" aria-hidden />
+          <Shirt className="size-10 text-[var(--gold)]" aria-hidden />
           <h2 className="text-2xl font-semibold">{t("emptyTitle")}</h2>
           <p className="text-lg">{t("emptyBody")}</p>
         </section>
@@ -104,7 +104,7 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
             return (
               <li key={p.id} className={`flex flex-col gap-4 bg-card p-4 ${p.isHidden || p.hiddenByAdmin ? "opacity-70" : ""}`}>
                 {isStale(p.lastSellerTouchAt, now, env.STALE_AFTER_DAYS) && !p.isHidden && (
-                  <Alert className="border-[var(--haldi)]">
+                  <Alert className="border-primary">
                     <TriangleAlert />
                     <AlertTitle className="text-base">{t("staleTitle")}</AlertTitle>
                     <AlertDescription>

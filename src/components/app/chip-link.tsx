@@ -11,7 +11,7 @@ export function ChipLink({ href, active, className, children }: { href: string; 
       nativeButton={false}
       render={<Link href={href} scroll={false} aria-current={active ? "true" : undefined} />}
       data-pressed={active ? "" : undefined}
-      className={cn(chip, "shrink-0 gap-2", className)}
+      className={cn(chip, "shrink-0 gap-2 data-[pressed]:hover:bg-primary/90", className)}
     >
       {children}
     </Button>

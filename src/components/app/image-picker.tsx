@@ -112,7 +112,7 @@ export function ImagePicker({ scope, max, maxEdge, images, setImages }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview */}
           <img src={img.preview} alt={t("photo", { n: i + 1 })} className="size-full object-contain" />
           {(img.key || img.failed) && <button type="button" className="absolute inset-0" onClick={() => edit(img)} aria-label={t("edit")} />}
-          {isCover && max > 1 && <Badge className="absolute left-1 top-1 bg-(--haldi) text-(--haldi-ink)">{t("cover")}</Badge>}
+          {isCover && max > 1 && <Badge className="absolute left-1 top-1 bg-primary text-primary-foreground">{t("cover")}</Badge>}
           {img.failed && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/70 p-2 text-center text-sm">
               <TriangleAlert className="size-6" />

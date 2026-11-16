@@ -44,7 +44,7 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
           {images.map((_, i) => (
             // 48px tap target around a small dot
             <button key={i} type="button" onClick={() => api?.scrollTo(i)} aria-label={`${t("photos")} ${i + 1}`} aria-current={i === current} className="flex size-8 items-center justify-center">
-              <span className={`size-3 rounded-full ${i === current ? "bg-[var(--haldi)]" : "bg-border"}`} />
+              <span className={`size-3 rounded-full ${i === current ? "bg-primary" : "bg-border"}`} />
             </button>
           ))}
         </div>

@@ -91,7 +91,7 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
           {t("call")}
         </Button>
         <Button variant="outline" onClick={toggleSave} aria-pressed={saved} className="h-12 gap-2 text-base">
-          <Heart className={saved ? "size-5 fill-current text-[var(--haldi)]" : "size-5"} />
+          <Heart className={saved ? "size-5 fill-current text-[var(--gold)]" : "size-5"} />
           {saved ? t("saved") : t("save")}
         </Button>
         <Button variant="outline" nativeButton={false} render={<a href={waShare(`${title} ${url}`)} target="_blank" rel="noopener noreferrer" />} className="h-12 gap-2 text-base">
@@ -119,7 +119,7 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
                 {t("code")}: {code}
                 {size && ` · ${t("size")}: ${size.name}`}
               </p>
-              <p className="font-semibold text-[var(--haldi)]">{price}</p>
+              <p className="font-bold text-primary">{price}</p>
             </div>
           </div>
           <p className="flex items-center gap-2 bg-muted p-3 text-base">

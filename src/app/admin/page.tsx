@@ -38,7 +38,7 @@ export default async function AdminShops({ searchParams }: PageProps<"/admin">) 
               key={s}
               href={`/admin?status=${s}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
               aria-current={s === status ? "page" : undefined}
-              className={cn("inline-flex h-12 items-center px-4 text-base", s === status ? "bg-[var(--haldi)] text-[var(--haldi-ink)]" : "bg-card hover:bg-accent")}
+              className={cn("inline-flex h-12 items-center px-4 text-base", s === status ? "bg-primary text-primary-foreground" : "bg-card hover:bg-accent")}
             >
               {t(s)}
             </Link>
@@ -74,7 +74,7 @@ export default async function AdminShops({ searchParams }: PageProps<"/admin">) 
                   <TableCell className="font-medium">
                     <span className="flex items-center gap-1">
                       {s.shopName}
-                      {s.isVerified && <BadgeCheck className="size-4 text-[var(--haldi)]" aria-label={t("verified")} />}
+                      {s.isVerified && <BadgeCheck className="size-4 text-[var(--gold)]" aria-label={t("verified")} />}
                     </span>
                     <div className="text-sm text-muted-foreground">{s.addressLine}</div>
                   </TableCell>

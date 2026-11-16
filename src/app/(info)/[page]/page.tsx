@@ -38,7 +38,7 @@ export default async function InfoPage({ params }: PageProps<"/[page]">) {
               const Icon = STEPS[i];
               return (
                 <li key={s} className="flex items-center gap-4 bg-card p-4 text-lg">
-                  <span className="flex size-14 shrink-0 items-center justify-center bg-[var(--haldi)] text-[var(--haldi-ink)]">
+                  <span className="flex size-14 shrink-0 items-center justify-center bg-primary text-primary-foreground">
                     <Icon className="size-7" />
                   </span>
                   <span>

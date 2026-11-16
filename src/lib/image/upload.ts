@@ -8,20 +8,56 @@ async function toJpeg(file: File, edge: number, maxSizeMB?: number) {
   return imageCompression(file, { maxWidthOrHeight: edge, fileType: "image/jpeg", initialQuality: 0.85, maxSizeMB, useWebWorker: true });
 }
 
-/** Centre the photo on a square canvas; padding is white for light photos, black for dark ones (judged by the photo's average brightness). */
+/** Most common colour in a pixel strip: pixels are bucketed to 16 levels per channel, then the winning bucket is averaged. */
+function dominant(data: Uint8ClampedArray): string {
+  const buckets = new Map<number, [number, number, number, number]>();
+  for (let i = 0; i < data.length; i += 4) {
+    const k = ((data[i] >> 4) << 8) | ((data[i + 1] >> 4) << 4) | (data[i + 2] >> 4);
+    const e = buckets.get(k) ?? [0, 0, 0, 0];
+    e[0]++;
+    e[1] += data[i];
+    e[2] += data[i + 1];
+    e[3] += data[i + 2];
+    buckets.set(k, e);
+  }
+  const [n, r, g, b] = [...buckets.values()].reduce((best, e) => (e[0] > best[0] ? e : best));
+  return `rgb(${Math.round(r / n)},${Math.round(g / n)},${Math.round(b / n)})`;
+}
+
+/** Centre the photo on a square canvas. Each padded side takes the most common colour of the photo's nearest 10% edge strip. */
 async function padSquare(file: File): Promise<File> {
   const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
-  const side = Math.max(bmp.width, bmp.height);
-  if (bmp.width === bmp.height) return file;
+  const { width: w, height: h } = bmp;
+  if (w === h) return file;
+  const side = Math.max(w, h);
+  const [x, y] = [(side - w) / 2, (side - h) / 2];
+
+  // Sample a small copy so the strips are cheap to read.
+  const k = Math.min(1, 100 / side);
+  const [sw, sh] = [Math.max(1, Math.round(w * k)), Math.max(1, Math.round(h * k))];
+  const probe = document.createElement("canvas");
+  probe.width = sw;
+  probe.height = sh;
+  const pctx = probe.getContext("2d", { willReadFrequently: true })!;
+  pctx.drawImage(bmp, 0, 0, sw, sh);
+  const [tall, wide] = [Math.max(1, Math.round(sh * 0.1)), Math.max(1, Math.round(sw * 0.1))];
+  const strip = (sx: number, sy: number, a: number, b: number) => dominant(pctx.getImageData(sx, sy, a, b).data);
+
   const c = document.createElement("canvas");
   c.width = c.height = side;
   const ctx = c.getContext("2d")!;
-  const probe = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
-  probe.drawImage(bmp, 0, 0, 1, 1); // 1x1 downscale = average colour
-  const [r, g, b] = probe.getImageData(0, 0, 1, 1).data;
-  ctx.fillStyle = (r * 299 + g * 587 + b * 114) / 1000 > 128 ? "#fff" : "#000";
-  ctx.fillRect(0, 0, side, side);
-  ctx.drawImage(bmp, (side - bmp.width) / 2, (side - bmp.height) / 2);
+  if (y > 0) {
+    ctx.fillStyle = strip(0, 0, sw, tall); // top
+    ctx.fillRect(0, 0, side, y);
+    ctx.fillStyle = strip(0, sh - tall, sw, tall); // bottom
+    ctx.fillRect(0, y + h, side, side - y - h);
+  } else {
+    ctx.fillStyle = strip(0, 0, wide, sh); // left
+    ctx.fillRect(0, 0, x, side);
+    ctx.fillStyle = strip(sw - wide, 0, wide, sh); // right
+    ctx.fillRect(x + w, 0, side - x - w, side);
+  }
+  ctx.drawImage(bmp, x, y);
   bmp.close();
   const blob = await new Promise<Blob | null>((res) => c.toBlob(res, "image/jpeg", 0.95));
   if (!blob) throw new Error("pad failed");

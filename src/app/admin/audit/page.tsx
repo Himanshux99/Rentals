@@ -25,7 +25,7 @@ export default async function AdminAudit({ searchParams }: PageProps<"/admin/aud
           <Link
             key={e ?? "all"}
             href={e ? `/admin/audit?entity=${e}` : "/admin/audit"}
-            className={cn("inline-flex h-12 items-center px-4 text-base", e === entity ? "bg-[var(--haldi)] text-[var(--haldi-ink)]" : "bg-card hover:bg-accent")}
+            className={cn("inline-flex h-12 items-center px-4 text-base", e === entity ? "bg-primary text-primary-foreground" : "bg-card hover:bg-accent")}
           >
             {e ?? t("all")}
           </Link>

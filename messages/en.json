@@ -23,7 +23,12 @@
     "title": "Dresses for rent in Barwani",
     "forShops": "List your shop",
     "cityLabel": "Barwani",
-    "body": "Wedding and festival outfits from local shops, sent straight to their WhatsApp."
+    "body": "Wedding and festival outfits from local shops, sent straight to their WhatsApp.",
+    "titleAccent": "for every occasion",
+    "pillar1": "Rent for a few days",
+    "pillar2": "Cleaned by the shop",
+    "pillar3": "Affordable and local",
+    "browse": "Browse dresses"
   },
   "login": {
     "title": "Your shop's dresses, online",
@@ -300,7 +305,8 @@
     "emptyTitle": "No dresses here",
     "emptyFiltered": "Try removing a filter or searching for something else.",
     "emptyBody": "Shops are adding dresses. Check again soon.",
-    "loadMore": "Show {count} more"
+    "loadMore": "Show {count} more",
+    "rentNow": "Rent now"
   },
   "product_page": {
     "pickSize": "Size",

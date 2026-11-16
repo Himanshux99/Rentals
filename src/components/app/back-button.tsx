@@ -15,7 +15,7 @@ export function BackButton({ label }: { label: string }) {
     <Button
       variant="ghost"
       onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
-      className="h-12 gap-2 px-3 text-base"
+      className="h-12 gap-2 px-3 text-base text-white hover:bg-white/10 hover:text-white"
     >
       <ArrowLeft className="size-5" />
       {label}

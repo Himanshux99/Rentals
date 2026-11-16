@@ -78,7 +78,7 @@ export default async function OptionListPage({ params, searchParams }: PageProps
             <Link
               key={c.id}
               href={`/admin/options/area?city=${c.id}`}
-              className={cn("inline-flex h-12 items-center px-4 text-base", c.id === cityId ? "bg-[var(--haldi)] text-[var(--haldi-ink)]" : "bg-card hover:bg-accent")}
+              className={cn("inline-flex h-12 items-center px-4 text-base", c.id === cityId ? "bg-primary text-primary-foreground" : "bg-card hover:bg-accent")}
             >
               {c.nameEn}
             </Link>

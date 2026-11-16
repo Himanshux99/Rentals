@@ -146,7 +146,7 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
           {options.colours.map((c) => (
             <ToggleGroupItem key={c.id} value={c.id} className="group h-auto w-16 flex-col gap-1 p-1 text-sm hover:bg-transparent aria-pressed:bg-transparent">
               <span
-                className="flex size-12 items-center justify-center rounded-full border-2 border-border group-aria-pressed:ring-4 group-aria-pressed:ring-[var(--haldi)]"
+                className="flex size-12 items-center justify-center rounded-full border-2 border-border group-aria-pressed:ring-4 group-aria-pressed:ring-primary"
                 style={{ backgroundColor: c.hex }}
               >
                 <Check className="hidden size-6 text-white mix-blend-difference group-aria-pressed:block" />
@@ -163,7 +163,7 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
         const pc = colour(cid);
         const colourErr = state.colourErrors?.[cid];
         return (
-          <section key={cid} className="flex flex-col gap-6 border-l-4 border-[var(--haldi)] bg-muted/40 py-4 pl-4 pr-2" aria-label={name(c)}>
+          <section key={cid} className="flex flex-col gap-6 border-l-4 border-primary bg-muted/40 py-4 pl-4 pr-2" aria-label={name(c)}>
             <h2 className="flex items-center gap-3 text-2xl font-semibold">
               <span className="size-8 rounded-full border-2 border-border" style={{ backgroundColor: c.hex }} aria-hidden />
               {name(c)}

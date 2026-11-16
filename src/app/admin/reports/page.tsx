@@ -28,7 +28,7 @@ export default async function AdminReports({ searchParams }: PageProps<"/admin/r
             key={s}
             href={`/admin/reports?status=${s}`}
             aria-current={s === status ? "page" : undefined}
-            className={cn("inline-flex h-12 items-center px-4 text-base", s === status ? "bg-[var(--haldi)] text-[var(--haldi-ink)]" : "bg-card hover:bg-accent")}
+            className={cn("inline-flex h-12 items-center px-4 text-base", s === status ? "bg-primary text-primary-foreground" : "bg-card hover:bg-accent")}
           >
             {t(`report_${s}`)}
           </Link>

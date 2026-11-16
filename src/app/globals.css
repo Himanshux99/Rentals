@@ -6,8 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-mukta);
-  --font-heading: var(--font-eczar);
+  --font-sans: var(--font-inter), var(--font-noto-sans), ui-sans-serif, sans-serif;
+  --font-heading: var(--font-playfair), var(--font-noto-serif), Georgia, serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -46,51 +46,57 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* "Tobacco and olive": tobacco ground, bone ink, olive action, haldi ochre for one band.
-   Colours from the Barwani wedding season: haldi (ochre), mehendi (olive), carved wood (tobacco). */
+/* RentWear system (docs/rentwear-ui-reference-guide.md): navy header, ivory ground, pale-blue accents,
+   gold only for small highlights. Legacy --haldi/--tobacco names stay as aliases so older screens retheme. */
 :root {
-  --tobacco: #472913;
-  --tobacco-2: #55321a;
-  --tobacco-3: #6a4628;
-  --bone: #e4e0cf;
-  --bone-soft: #c2af93;
-  --haldi: #c79a3e;
-  --haldi-ink: #2b170a;
-  --mehendi: #525e1b;
+  --navy: #0e3758;
+  --blue: #174f75;
+  --blue-mid: #648cac;
+  --blue-pale: #eaf2f8;
+  --ivory: #fbf9f7;
+  --beige: #d8c0aa;
+  --gold: #d9a441;
+  --ink: #15263a;
+  --muted-ink: #5b6676;
+  --line: #e5e2df;
   --whatsapp: #1f7a45;
+  --tobacco: var(--navy);
+  --haldi: var(--gold);
+  --haldi-ink: var(--ink);
 
-  --background: var(--tobacco);
-  --foreground: var(--bone);
-  --card: var(--tobacco-2);
-  --card-foreground: var(--bone);
-  --popover: var(--tobacco-2);
-  --popover-foreground: var(--bone);
-  --primary: var(--mehendi);
-  --primary-foreground: var(--bone);
-  --secondary: var(--bone);
-  --secondary-foreground: var(--tobacco);
-  --muted: var(--tobacco-2);
-  --muted-foreground: var(--bone-soft);
-  --accent: var(--tobacco-3);
-  --accent-foreground: var(--bone);
-  --destructive: #f08a6c;
-  --border: var(--tobacco-3);
-  --input: var(--tobacco-3);
-  --ring: var(--haldi);
-  --chart-1: var(--haldi);
-  --chart-2: var(--mehendi);
-  --chart-3: var(--bone-soft);
-  --chart-4: var(--tobacco-3);
-  --chart-5: var(--bone);
-  --radius: 0rem;
-  --sidebar: var(--tobacco-2);
-  --sidebar-foreground: var(--bone);
-  --sidebar-primary: var(--mehendi);
-  --sidebar-primary-foreground: var(--bone);
-  --sidebar-accent: var(--tobacco-3);
-  --sidebar-accent-foreground: var(--bone);
-  --sidebar-border: var(--tobacco-3);
-  --sidebar-ring: var(--haldi);
+  --background: var(--ivory);
+  --foreground: var(--ink);
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --primary: var(--blue);
+  --primary-foreground: #ffffff;
+  --secondary: var(--blue-pale);
+  --secondary-foreground: var(--navy);
+  --muted: var(--blue-pale);
+  --muted-foreground: var(--muted-ink);
+  --accent: var(--blue-pale);
+  --accent-foreground: var(--navy);
+  --destructive: #b3412a;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--blue-mid);
+  --chart-1: var(--blue);
+  --chart-2: var(--blue-mid);
+  --chart-3: var(--gold);
+  --chart-4: var(--beige);
+  --chart-5: var(--navy);
+  --radius: 0.75rem;
+  --shadow-card: 0 4px 16px rgba(18, 59, 90, 0.08);
+  --sidebar: var(--ivory);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--blue);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--blue-pale);
+  --sidebar-accent-foreground: var(--navy);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--blue-mid);
 }
 
 @layer base {
@@ -108,12 +114,12 @@
     font-size: 100%;
   }
   body {
-    font-size: 1.0625rem;
+    font-size: 1rem;
     line-height: 1.55;
   }
   h1, h2, h3 {
     font-family: var(--font-heading);
-    letter-spacing: -0.02em;
-    line-height: 1.05;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
   }
 }

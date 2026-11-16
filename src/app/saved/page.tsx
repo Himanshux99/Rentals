@@ -27,7 +27,7 @@ export default async function SavedPage({ searchParams }: PageProps<"/saved">) {
       <main className="flex flex-1 flex-col gap-6 px-4 pb-8 pt-2 sm:px-8">
         <SavedSync current={raw} />
         <h1 className="flex items-center gap-2 text-3xl font-semibold sm:text-4xl">
-          <Heart className="size-7 text-[var(--haldi)]" />
+          <Heart className="size-7 text-[var(--gold)]" />
           {t("title")}
         </h1>
         {ordered.length === 0 ? (

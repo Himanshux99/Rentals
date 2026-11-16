@@ -22,28 +22,28 @@ export async function AvailabilityBadge({ sizes, className }: { sizes: CatalogCa
   const label =
     a.kind === "available" ? t("available") : a.kind === "rented" ? t("rentedUntil", { date: format.dateTime(a.freeFrom, { day: "numeric", month: "short", timeZone: "UTC" }) }) : t("allRented");
   return (
-    <Badge className={cn("h-7 px-2 text-sm", a.kind === "available" ? "bg-[var(--haldi)] text-[var(--haldi-ink)]" : "bg-black/70 text-white", className)}>
+    <Badge className={cn("h-7 rounded-full px-3 text-sm font-medium", a.kind === "available" ? "bg-secondary text-[var(--navy)]" : "bg-[var(--beige)]/90 text-[var(--ink)]", className)}>
       {label}
     </Badge>
   );
 }
 
 export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: boolean }) {
-  const hi = (await getLocale()) === "hi";
+  const [hi, t] = await Promise.all([getLocale().then((l) => l === "hi"), getTranslations("catalog")]);
   const cover = p.images[0];
   const shop = p.design.shop;
   return (
-    <li className="flex flex-col bg-card">
-      <Link href={`/p/${p.code}`} className="flex flex-1 flex-col focus-visible:outline-2 focus-visible:outline-ring">
-        <div className="relative aspect-square bg-muted">
+    <li className="flex flex-col rounded-2xl border border-border bg-card p-2 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[0_8px_24px_rgba(18,59,90,0.14)]">
+      <Link href={`/p/${p.code}`} className="flex flex-1 flex-col gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-ring">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
           {cover && (
-            <Image src={imageSrc(cover.key)} alt="" fill priority={priority} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw" className="object-contain" />
+            <Image src={imageSrc(cover.key)} alt="" fill priority={priority} sizes="(min-width: 1280px) 22vw, (min-width: 640px) 33vw, 50vw" className="object-contain" />
           )}
           <AvailabilityBadge sizes={p.sizes} className="absolute left-2 top-2" />
         </div>
-        <div className="flex flex-col gap-1 p-3">
+        <div className="flex flex-1 flex-col gap-1 px-2">
           <p className="text-base font-semibold leading-snug">{hi ? p.titleHi : p.titleEn}</p>
-          <p className="text-lg font-semibold text-[var(--haldi)]">
+          <p className="text-xl font-bold">
             <PriceText prices={p.design} />
           </p>
           <p className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -51,14 +51,15 @@ export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: 
             <span className="truncate">
               {shop.shopName}, {hi ? shop.area.nameHi : shop.area.nameEn}
             </span>
-            {shop.isVerified && <BadgeCheck className="size-4 shrink-0 text-[var(--haldi)]" aria-label="verified" />}
+            {shop.isVerified && <BadgeCheck className="size-4 shrink-0 text-[var(--gold)]" aria-label="verified" />}
           </p>
         </div>
+        <span className="mt-1 inline-flex h-12 items-center justify-center rounded-xl bg-primary text-base font-semibold text-primary-foreground">{t("rentNow")}</span>
       </Link>
     </li>
   );
 }
 
 export function ProductGrid({ children }: { children: React.ReactNode }) {
-  return <ul className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4">{children}</ul>;
+  return <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</ul>;
 }
