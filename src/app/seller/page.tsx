@@ -3,7 +3,7 @@ import { SubmitButton } from "@/components/feedback/submit-button";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
-import { Check, CircleCheck, Clock, Copy, Eye, EyeOff, MessageCircle, Minus, PauseCircle, Pencil, Plus, Settings, Shirt, ShoppingBag, Store, Trash2, TriangleAlert } from "lucide-react";
+import { Check, CircleCheck, Clock, Copy, Eye, EyeOff, Handshake, MessageCircle, PauseCircle, Pencil, Plus, Settings, Shirt, ShoppingBag, Store, Trash2, TriangleAlert, Undo2 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/app/whatsapp-icon";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -109,11 +109,20 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
           <p className="text-lg">{t("emptyBody")}</p>
         </section>
       ) : (
-        groups.map(
-          (group, i) =>
-            group.length > 0 && (
-              <section key={i} className="flex flex-col gap-3">
-                {i === 1 && <h2 className="text-2xl font-semibold">{t("rentedOutTitle", { count: group.length })}</h2>}
+        <>
+          {/* jump links, not tabs: both groups stay on the page so nothing is hidden */}
+          <nav className="grid grid-cols-2 gap-2 sm:flex">
+            {groups.map((group, i) => (
+              <Button key={i} variant={i === 0 ? "default" : "outline"} nativeButton={false} render={<a href={i === 0 ? "#available" : "#rented"} />} className="h-12 gap-2 px-5 text-base font-semibold">
+                {i === 0 ? <CircleCheck className="size-5" /> : <Handshake className="size-5" />}
+                {t(i === 0 ? "availableTab" : "rentedOutTitle", { count: group.length })}
+              </Button>
+            ))}
+          </nav>
+        {groups.map((group, i) => (
+              <section key={i} id={i === 0 ? "available" : "rented"} className="flex scroll-mt-4 flex-col gap-3">
+                <h2 className="text-2xl font-semibold">{t(i === 0 ? "availableTab" : "rentedOutTitle", { count: group.length })}</h2>
+                {group.length === 0 && <p className="bg-card px-6 py-10 text-lg text-muted-foreground">{t(i === 0 ? "noneAvailable" : "noneRented")}</p>}
                 <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {group.map((p) => {
                     const forSale = p.design.sellPrice != null;
@@ -145,20 +154,20 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
                           </Alert>
                         )}
 
-                        <div className="flex gap-3 sm:flex-col">
-                          <Link href={`/p/${p.code}`} aria-label={hi ? p.titleHi : p.titleEn} className="relative block aspect-square w-24 shrink-0 overflow-hidden bg-muted sm:w-full">
+                        <div className="flex flex-col gap-3">
+                          <Link href={`/p/${p.code}`} aria-label={hi ? p.titleHi : p.titleEn} className="relative block aspect-square w-full overflow-hidden bg-muted">
                             {p.images[0] && (
                               <Image
                                 src={imageSrc(p.images[0].key)}
                                 alt=""
                                 fill
-                                sizes="(min-width: 1024px) 18rem, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 6rem"
+                                sizes="(min-width: 1024px) 18rem, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
                                 className="object-cover transition-transform duration-300 hover:scale-[1.03]"
                               />
                             )}
                           </Link>
                           <div className="flex min-w-0 flex-col gap-1">
-                            <p className="line-clamp-2 text-base font-semibold leading-snug sm:min-h-[2lh]">{hi ? p.titleHi : p.titleEn}</p>
+                            <p className="line-clamp-2 text-base font-semibold leading-snug min-h-[2lh]">{hi ? p.titleHi : p.titleEn}</p>
                             <p className="text-sm tabular-nums text-muted-foreground">{p.code}</p>
                             {p.moderation === "pending" && <Badge variant="secondary">{t("inReview")}</Badge>}
                             {p.hiddenByAdmin && <Badge variant="destructive">{t("hiddenByAdmin")}</Badge>}
@@ -182,28 +191,32 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
                         <ul className="flex flex-col gap-2">
                           {p.sizes.map((s) => (
                             <li key={s.id} className="flex flex-col gap-2 bg-muted p-2">
-                              <div className="grid grid-cols-[1fr_auto] items-center gap-2">
-                                <span className="flex min-w-0 flex-col">
-                                  <span className="text-base font-semibold">{hi ? s.size.nameHi : s.size.nameEn}</span>
-                                  <span className="text-sm text-muted-foreground">
-                                    {t("availableOf", {
-                                      available: s.availableCount,
-                                      stock: s.stockCount,
-                                    })}
-                                  </span>
+                              <span className="flex items-baseline justify-between gap-2">
+                                <span className="text-base font-semibold">{hi ? s.size.nameHi : s.size.nameEn}</span>
+                                <span className="text-sm text-muted-foreground">
+                                  {t("availableOf", {
+                                    available: s.availableCount,
+                                    stock: s.stockCount,
+                                  })}
                                 </span>
-                                <div className="flex bg-card">
-                                  <form action={availableAction.bind(null, s.id, -1)}>
-                                    <SubmitButton variant="outline" className="size-12" disabled={s.availableCount <= 0} aria-label={t("oneOut")}>
-                                      <Minus className="size-5" />
+                              </span>
+                              <div className="grid grid-cols-2 gap-2">
+                                {s.availableCount > 0 && (
+                                  <form action={availableAction.bind(null, s.id, -1)} className={s.availableCount < s.stockCount ? "" : "col-span-2"}>
+                                    <SubmitButton className="h-12 w-full gap-2 text-base">
+                                      <Handshake className="size-5" />
+                                      {t("rentedBtn")}
                                     </SubmitButton>
                                   </form>
-                                  <form action={availableAction.bind(null, s.id, 1)}>
-                                    <SubmitButton variant="outline" className="size-12" disabled={s.availableCount >= s.stockCount} aria-label={t("oneBack")}>
-                                      <Plus className="size-5" />
+                                )}
+                                {s.availableCount < s.stockCount && (
+                                  <form action={availableAction.bind(null, s.id, 1)} className={s.availableCount > 0 ? "" : "col-span-2"}>
+                                    <SubmitButton variant="outline" className="h-12 w-full gap-2 bg-card text-base">
+                                      <Undo2 className="size-5" />
+                                      {t("returnedBtn")}
                                     </SubmitButton>
                                   </form>
-                                </div>
+                                )}
                               </div>
                               {s.availableCount < s.stockCount && (
                                 <form action={freeFromAction.bind(null, s.id)} className="flex flex-col gap-1">
@@ -282,8 +295,8 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
                   })}
                 </ul>
               </section>
-            ),
-        )
+        ))}
+        </>
       )}
     </div>
   );

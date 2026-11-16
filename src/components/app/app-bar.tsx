@@ -12,7 +12,7 @@ export async function AppBar({ signedIn = false, home = "/" }: { signedIn?: bool
   const t = await getTranslations("common");
   return (
     <>
-    <header className="bg-[var(--navy)] text-white shadow-[var(--shadow-card)]">
+    <header className="relative z-40 border-b border-black/10 bg-[var(--navy)] text-white shadow-[0_1px_2px_rgba(4,40,90,0.18),0_6px_18px_rgba(4,40,90,0.16)]">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-2 sm:px-8">
       <Wordmark href={home} />
       <nav className="flex shrink-0 items-center">

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SubmitButton } from "@/components/feedback/submit-button";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { BadgeCheck, LogIn, Plus, Search, Trash2 } from "lucide-react";
+import { Ban, BadgeCheck, LogIn, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -77,7 +77,7 @@ export default async function AdminShops({ searchParams }: PageProps<"/admin">) 
                       {s.shopName}
                       {s.isVerified && <BadgeCheck className="size-4 text-[var(--gold)]" aria-label={t("verified")} />}
                     </span>
-                    <div className="text-sm text-muted-foreground">{s.addressLine}</div>
+                    <div className="line-clamp-2 max-w-xs whitespace-normal text-sm text-muted-foreground" title={s.addressLine}>{s.addressLine}</div>
                   </TableCell>
                   <TableCell>
                     {s.ownerName}
@@ -91,7 +91,7 @@ export default async function AdminShops({ searchParams }: PageProps<"/admin">) 
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{date.format(s.createdAt)}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex flex-wrap justify-end gap-1">
+                    <div className="flex items-center justify-end gap-1">
                       {s.status !== "approved" && (
                         <form action={changeShopStatus.bind(null, s.id, "approved")}>
                           <SubmitButton className="h-12 px-4 text-base">
@@ -101,7 +101,8 @@ export default async function AdminShops({ searchParams }: PageProps<"/admin">) 
                       )}
                       {s.status !== "suspended" && (
                         <form action={changeShopStatus.bind(null, s.id, "suspended")}>
-                          <SubmitButton variant="ghost" className="h-12 px-4 text-base">
+                          <SubmitButton variant="ghost" className="h-12 gap-1 px-3 text-base">
+                            <Ban className="size-5" />
                             {t("suspend")}
                           </SubmitButton>
                         </form>
