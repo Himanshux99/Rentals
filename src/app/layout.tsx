@@ -10,6 +10,7 @@ import { LOCALE_COOKIE } from "@/i18n/request";
 import { DeferredToaster } from "@/components/feedback/deferred-toaster";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 import "./globals.css";
 
 // Josefin Sans sets all Latin text; the Noto pair backs it up for Devanagari so Hindi matches.
@@ -49,6 +50,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
+        {process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_CLARITY_ID && (
+          <Script id="clarity" strategy="afterInteractive">{`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${process.env.NEXT_PUBLIC_CLARITY_ID}");`}</Script>
+        )}
       </body>
     </html>
   );
