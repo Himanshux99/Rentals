@@ -3,6 +3,7 @@ import { slugBase } from "@/lib/slug";
 import type { ReportStatus } from "@/generated/prisma/client";
 import { db } from "../db";
 import { audit } from "./audit";
+import { visibleProduct } from "./catalog";
 
 // ---------- Products (SPEC §9: feature, force-hide) ----------
 
@@ -97,7 +98,7 @@ export async function getStats(days = 30) {
     db.shop.count({ where: { deletedAt: null } }),
     db.shop.count({ where: { deletedAt: null, status: "approved" } }),
     db.product.count({ where: { design: { shop: { deletedAt: null } } } }),
-    db.product.count({ where: { isHidden: false, hiddenByAdmin: false, design: { shop: { deletedAt: null, status: "approved" } } } }),
+    db.product.count({ where: visibleProduct }),
     db.$queryRaw<{ day: string; n: number }[]>`
       SELECT to_char(("createdAt" AT TIME ZONE 'Asia/Kolkata')::date, 'YYYY-MM-DD') AS day, count(*)::int AS n
       FROM "ProductView" WHERE "createdAt" >= ${since} GROUP BY 1`,

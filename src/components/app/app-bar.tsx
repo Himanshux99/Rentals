@@ -11,12 +11,10 @@ import { Wordmark } from "./wordmark";
 export async function AppBar({ signedIn = false, home = "/" }: { signedIn?: boolean; home?: string }) {
   const t = await getTranslations("common");
   return (
+    <>
     <header className="bg-[var(--navy)] text-white shadow-[var(--shadow-card)]">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-2 sm:px-8">
-      <div className="flex shrink-0 items-center">
-        <BackButton label={t("back")} />
-        <Wordmark href={home} />
-      </div>
+      <Wordmark href={home} />
       <nav className="flex shrink-0 items-center">
         {!signedIn && (
           <Button variant="ghost" nativeButton={false} render={<Link href="/saved" />} className="h-12 min-w-12 gap-2 px-2.5 text-base text-white hover:bg-white/10 hover:text-white">
@@ -48,5 +46,7 @@ export async function AppBar({ signedIn = false, home = "/" }: { signedIn?: bool
       </nav>
       </div>
     </header>
+    <BackButton label={t("back")} />
+    </>
   );
 }

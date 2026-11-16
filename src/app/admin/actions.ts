@@ -10,6 +10,8 @@ import { IMPERSONATE_COOKIE } from "@/server/seller";
 import { audit } from "@/server/services/audit";
 import { addSynonym, closeReport, deleteSynonym, OPTION_LISTS, saveOption, setProductFlag, type OptionList } from "@/server/services/admin";
 import { createShop, setShopStatus, setShopVerified, softDeleteShop } from "@/server/services/shops";
+import { decide, listQueue, setDirectUpload, type DecideResult, type Decision, type QueueCursor, type QueueFilter } from "@/server/services/moderation";
+import { REJECT_REASONS, type Moderation } from "@/lib/moderation";
 import { parseShopForm, type OnboardingState } from "../seller/onboarding/shop-form";
 
 // Every admin action re-checks the role: server actions are public endpoints.
@@ -74,6 +76,32 @@ export async function closeReportAction(reportId: string, status: "resolved" | "
   const admin = await requireRole("admin");
   await closeReport(reportId, status, hide, admin.id);
   revalidatePath("/admin/reports");
+}
+
+// ---------- Product review ----------
+
+const status = z.enum(["pending", "approved", "rejected"]);
+const filter = z.object({ status, sort: z.enum(["oldest", "newest"]), category: z.string().max(60).nullable(), q: z.string().max(60) });
+const cursor = z.object({ at: z.iso.datetime(), id: z.string().max(40) });
+const decision = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("approve") }),
+  z.object({ action: z.literal("reject"), reason: z.enum(REJECT_REASONS), note: z.string().trim().max(300).transform((s) => s || null) }),
+]);
+
+export async function loadQueueAction(f: QueueFilter, c: QueueCursor) {
+  await requireRole("admin");
+  return listQueue(filter.parse(f), cursor.parse(c));
+}
+
+export async function moderateAction(productId: string, from: Moderation, version: string, d: Decision): Promise<DecideResult> {
+  const admin = await requireRole("admin");
+  return decide(z.string().max(40).parse(productId), status.parse(from), z.iso.datetime().parse(version), decision.parse(d), admin.id);
+}
+
+export async function setDirectUploadAction(value: boolean) {
+  const admin = await requireRole("admin");
+  await setDirectUpload(z.boolean().parse(value), admin.id);
+  revalidatePath("/admin/review");
 }
 
 const option = z.object({

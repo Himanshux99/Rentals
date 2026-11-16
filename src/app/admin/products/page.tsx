@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Products" };
 export default async function AdminProducts({ searchParams }: PageProps<"/admin/products">) {
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q : "";
-  const [t, locale, products] = await Promise.all([getTranslations("admin"), getLocale(), listAllProducts(q)]);
+  const [t, tm, locale, products] = await Promise.all([getTranslations("admin"), getTranslations("moderation"), getLocale(), listAllProducts(q)]);
 
   return (
     <>
@@ -48,6 +48,11 @@ export default async function AdminProducts({ searchParams }: PageProps<"/admin/
                     </Link>
                     <div className="flex flex-wrap gap-1 text-sm text-muted-foreground">
                       <span className="tabular-nums">{p.code}</span>
+                      {p.moderation !== "approved" && (
+                        <Badge variant={p.moderation === "rejected" ? "destructive" : "secondary"} render={<Link href={`/admin/review?status=${p.moderation}&q=${p.code}`} />}>
+                          {tm(`status_${p.moderation}`)}
+                        </Badge>
+                      )}
                       {p.isFeatured && <Badge>{t("featured")}</Badge>}
                       {p.hiddenByAdmin && <Badge variant="destructive">{t("forceHidden")}</Badge>}
                       {p.isHidden && <Badge variant="secondary">{t("sellerHidden")}</Badge>}

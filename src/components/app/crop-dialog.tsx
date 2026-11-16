@@ -114,15 +114,17 @@ export function CropDialog({ file, onDone, onCancel }: Props) {
         className="top-0 left-0 h-dvh max-w-none translate-x-0 translate-y-0 grid-rows-[auto_1fr_auto] gap-3 rounded-none sm:top-1/2 sm:left-1/2 sm:h-[90dvh] sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl"
       >
         <DialogTitle className="text-lg">{t("cropTitle")}</DialogTitle>
-        <div className="flex min-h-0 items-center justify-center overflow-hidden bg-black">
+        {/* size container: the photo fits the row left over after the controls, so no part is clipped */}
+        <div className="flex [container-type:size] min-h-0 items-center justify-center overflow-hidden bg-black">
           {src && (
-            <ReactCrop crop={crop_} aspect={RATIOS[ratio]} onChange={(_, pct) => setCrop(pct)} onComplete={setArea} minWidth={48} minHeight={48} keepSelection>
+            <ReactCrop crop={crop_} aspect={RATIOS[ratio]} onChange={(_, pct) => setCrop(pct)} onComplete={setArea} minWidth={48} minHeight={48} keepSelection style={{ maxHeight: "100cqh" }}>
+              {/* ReactCrop's CSS gives the img `max-height: inherit`, so the height cap must sit on ReactCrop, not the img */}
               {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview */}
               <img
                 ref={imgRef}
                 src={src}
                 alt=""
-                className="max-h-[60dvh] w-auto max-w-full"
+                className="w-auto"
                 onLoad={(e) => {
                   const { width, height } = e.currentTarget;
                   setArea({ unit: "px", x: 0, y: 0, width, height });

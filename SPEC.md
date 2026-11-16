@@ -1,4 +1,4 @@
-# Rentals — Product Specification
+# Vastra — Product Specification
 
 A mobile-first website where local dress rental shops list their clothes and users browse them. When a user likes something, the site opens a ready-made WhatsApp message to that shop. **We are only a discovery platform:** no payments, bookings or delivery happen on the site. Shop and user agree everything on WhatsApp.
 

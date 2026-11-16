@@ -20,8 +20,8 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
   const arrow = "size-12 rounded-full border-0 bg-black/60 text-white hover:bg-black/80 disabled:hidden [&_svg]:size-6";
 
   return (
-    <div className="-mx-4 flex flex-col gap-3 md:mx-0" role="region" aria-roledescription="carousel" aria-label={t("photos")}>
-      <Carousel setApi={setApi} className="relative">
+    <div className="flex flex-col gap-3" role="region" aria-roledescription="carousel" aria-label={t("photos")}>
+      <Carousel setApi={setApi} className="relative overflow-hidden rounded-xl border border-border">
         <CarouselContent className="ml-0">
           {images.map((src, i) => (
             <CarouselItem key={src} className="relative aspect-square bg-muted pl-0">

@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { BarChart3, Flag, ListChecks, ScrollText, Shirt, Store } from "lucide-react";
+import { BarChart3, Flag, ListChecks, ScrollText, ShieldCheck, Shirt, Store } from "lucide-react";
 import { AppBar } from "@/components/app/app-bar";
+import { Badge } from "@/components/ui/badge";
 import { requireRole } from "@/server/auth";
+import { countPending } from "@/server/services/moderation";
 
 const NAV = [
   { href: "/admin", key: "navShops", icon: Store },
+  { href: "/admin/review", key: "navReview", icon: ShieldCheck },
   { href: "/admin/products", key: "navProducts", icon: Shirt },
   { href: "/admin/reports", key: "navReports", icon: Flag },
   { href: "/admin/options", key: "navOptions", icon: ListChecks },
@@ -15,7 +18,7 @@ const NAV = [
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   await requireRole("admin");
-  const t = await getTranslations("admin");
+  const [t, pending] = await Promise.all([getTranslations("admin"), countPending()]);
   return (
     <>
       <AppBar signedIn home="/admin" />
@@ -24,6 +27,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           <Link key={href} href={href} className="inline-flex h-12 shrink-0 items-center gap-2 px-3 text-base hover:bg-accent">
             <Icon className="size-5" />
             {t(key)}
+            {key === "navReview" && pending > 0 && <Badge className="tabular-nums">{pending}</Badge>}
           </Link>
         ))}
       </nav>

@@ -1,4 +1,4 @@
-# Rentals Website: Build Plan
+# Vastra Website: Build Plan
 
 Nov 10, 2026 · @himanshu Choyal · Live doc: https://claude.ai/artifact/Ai3YxHkEQYWwgbzuecftNC
 

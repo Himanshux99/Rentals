@@ -58,13 +58,14 @@ export async function createDesignAction(_prev: ProductFormState, formData: Form
   const { shop, user } = await requireLiveShop();
   const p = parse(formData);
   if (!p.ok) return p.state;
+  let review: boolean;
   try {
-    await createDesign(shop.id, user.id, p.data);
+    review = (await createDesign(shop.id, user.id, p.data)).moderation === "pending";
   } catch (e) {
     console.error(e);
     return { errors: { form: "failed" } };
   }
-  redirect("/seller?added=1");
+  redirect(review ? "/seller?added=1&review=1" : "/seller?added=1");
 }
 
 export async function updateProductAction(_prev: ProductFormState, formData: FormData): Promise<ProductFormState> {
@@ -72,11 +73,12 @@ export async function updateProductAction(_prev: ProductFormState, formData: For
   const p = parse(formData);
   if (!p.ok) return p.state;
   if (!p.productId) return { errors: { form: "failed" } };
+  let review: boolean;
   try {
-    await updateProduct(shop.id, user.id, p.productId, p.data);
+    review = (await updateProduct(shop.id, user.id, p.productId, p.data)) === "pending";
   } catch (e) {
     console.error(e);
     return { errors: { form: "failed" } };
   }
-  redirect("/seller");
+  redirect(review ? "/seller?review=1" : "/seller");
 }

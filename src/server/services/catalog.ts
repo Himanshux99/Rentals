@@ -7,8 +7,9 @@ import { hit } from "../rate-limit";
 
 export const PAGE_SIZE = 24;
 
-/** What shoppers may see: not hidden by seller or admin, in a live shop. */
+/** What shoppers may see: approved in review, not hidden by seller or admin, in a live shop. Every public query uses this. */
 export const visibleProduct = {
+  moderation: "approved" as const,
   isHidden: false,
   hiddenByAdmin: false,
   design: { shop: { status: "approved" as const, deletedAt: null } },
@@ -82,7 +83,7 @@ export async function listCatalog(f: Filters, scope: { shopId?: string; codes?: 
     return rankScore(a, now, env.STALE_AFTER_DAYS) - rankScore(b, now, env.STALE_AFTER_DAYS) || b.createdAt.getTime() - a.createdAt.getTime();
   });
   const pageIds = sorted.slice(0, f.page * PAGE_SIZE).map((p) => p.id);
-  const cards = new Map((await db.product.findMany({ where: { id: { in: pageIds } }, select: card })).map((c) => [c.id, c]));
+  const cards = new Map((await db.product.findMany({ where: { ...visibleProduct, id: { in: pageIds } }, select: card })).map((c) => [c.id, c]));
   // a product hidden between the two queries just drops out of the page
   return { items: pageIds.flatMap((id) => cards.get(id) ?? []), total: sorted.length };
 }
@@ -113,7 +114,7 @@ export async function searchProductIds(q: string): Promise<string[]> {
       FROM "Product" p
       JOIN "Design" d ON d.id = p."designId"
       JOIN "Category" c ON c.id = d."categoryId"
-      WHERE p."isHidden" = false AND p."hiddenByAdmin" = false
+      WHERE p.moderation = 'approved' AND p."isHidden" = false AND p."hiddenByAdmin" = false
     ) s
     WHERE ${Prisma.join(conds, " AND ")}`;
   return rows.map((r) => r.id);
@@ -166,7 +167,7 @@ export function getProductByCode(code: string) {
           works: true,
           shop: { include: { area: true } },
           // older designs listed each colour as its own product; this links them
-          products: { where: { isHidden: false, hiddenByAdmin: false }, select: { code: true, colours: true }, orderBy: { createdAt: "asc" } },
+          products: { where: { moderation: "approved", isHidden: false, hiddenByAdmin: false }, select: { code: true, colours: true }, orderBy: { createdAt: "asc" } },
         },
       },
     },

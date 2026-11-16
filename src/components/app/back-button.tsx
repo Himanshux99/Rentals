@@ -12,13 +12,15 @@ export function BackButton({ label }: { label: string }) {
   const pathname = usePathname();
   if (ROOTS.includes(pathname)) return null;
   return (
+    <div className="mx-auto w-full max-w-7xl px-4 pt-2 sm:px-8">
     <Button
       variant="ghost"
       onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
-      className="h-12 min-w-12 gap-2 px-2.5 text-base text-white hover:bg-white/10 hover:text-white"
+      className="-ml-2.5 h-12 gap-2 px-2.5 text-base font-semibold"
     >
       <ArrowLeft className="size-5" />
-      <span className="sr-only sm:not-sr-only">{label}</span>
+      {label}
     </Button>
+    </div>
   );
 }

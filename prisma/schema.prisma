@@ -20,6 +20,14 @@ enum ShopStatus {
   suspended
 }
 
+// Admin review of a product's public content. Separate from isHidden/hiddenByAdmin (visibility switches)
+// and from size availability: a product is public only when every one of them allows it.
+enum Moderation {
+  pending
+  approved
+  rejected
+}
+
 enum ReportStatus {
   open
   resolved
@@ -198,6 +206,13 @@ model Product {
   // set by an admin (SPEC §9 force-hide); the seller can't undo it
   hiddenByAdmin     Boolean        @default(false)
   isFeatured        Boolean        @default(false)
+  // new rows default to pending so nothing goes public by accident; createDesign sets it from Direct Upload Mode
+  moderation        Moderation     @default(pending)
+  // when the current content was sent for review; also the version an admin's decision must match
+  submittedAt       DateTime       @default(now())
+  // key from REJECT_REASONS (src/lib/moderation.ts); kept on resubmit so the reviewer sees the last rejection
+  rejectReason      String?
+  rejectNote        String?
   lastSellerTouchAt DateTime       @default(now())
   viewCount         Int            @default(0)
   enquiryCount      Int            @default(0)
@@ -211,6 +226,15 @@ model Product {
 
   @@index([isHidden])
   @@index([designId])
+  @@index([moderation, submittedAt])
+}
+
+// One row (id 1) of admin settings.
+model SiteSetting {
+  id           Int      @id @default(1)
+  // on: new uploads are approved at once; off: they wait in the review queue
+  directUpload Boolean  @default(false)
+  updatedAt    DateTime @updatedAt
 }
 
 model ProductSize {

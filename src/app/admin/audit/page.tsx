@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Audit log" };
 
-const ENTITIES = ["Shop", "Product", "ProductSize", "Design", "Report"];
+const ENTITIES = ["Shop", "Product", "ProductSize", "Design", "Report", "SiteSetting"];
 
 export default async function AdminAudit({ searchParams }: PageProps<"/admin/audit">) {
   const sp = await searchParams;

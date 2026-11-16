@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 // Installable PWA (SPEC §2).
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Rentals · Barwani",
-    short_name: "Rentals",
+    name: "Vastra · Barwani",
+    short_name: "Vastra",
     description: "Dresses for rent from Barwani shops, straight to WhatsApp.",
     start_url: "/",
     display: "standalone",

@@ -1,9 +1,11 @@
 import "server-only";
 import { productCode, productTitle } from "@/lib/product";
+import { isMaterialEdit, statusOnCreate, statusOnEdit, type PublicContent } from "@/lib/moderation";
 import { isOwnKey, productPrefix } from "@/lib/upload-key";
 import { db } from "../db";
 import { storage } from "../storage";
 import { audit } from "./audit";
+import { readDirectUpload } from "./moderation";
 
 export type NewDesign = {
   categoryId: string;
@@ -77,27 +79,29 @@ const designData = (input: NewDesign, op: "connect" | "set") => {
   };
 };
 
-/** One Design with one live Product (any number of colours). Returns the new product code. */
+/** One Design with one Product (any number of colours), approved or pending per Direct Upload Mode. */
 export async function createDesign(shopId: string, actorId: string, input: NewDesign) {
   checkInput(shopId, input);
   const { category, forWhom, colours } = await titleParts(input);
 
   return db.$transaction(
     async (tx) => {
+      const moderation = statusOnCreate(await readDirectUpload(tx));
       const design = await tx.design.create({ data: { shopId, ...designData(input, "connect") } });
       const [{ n }] = await tx.$queryRaw<{ n: number }[]>`SELECT nextval('product_code_seq')::int AS n`;
       const product = await tx.product.create({
         data: {
           designId: design.id,
           code: productCode(n),
+          moderation,
           colours: { connect: colours.map((c) => ({ id: c.id })) },
           ...productTitle(category, colours, forWhom),
           sizes: { create: input.sizes.map((s) => ({ sizeId: s.sizeId, stockCount: s.stock, availableCount: s.stock })) },
           images: { create: input.images.map((img, i) => ({ key: img.key, ogKey: img.ogKey, sortOrder: i })) },
         },
       });
-      await audit(tx, { actorId, action: "design.create", entity: "Design", entityId: design.id, after: { ...input, code: product.code } });
-      return product.code;
+      await audit(tx, { actorId, action: "design.create", entity: "Design", entityId: design.id, after: { ...input, code: product.code, moderation } });
+      return { code: product.code, moderation };
     },
     { timeout: 20_000 },
   );
@@ -219,6 +223,7 @@ export function getProductForEdit(shopId: string, productId: string) {
 /**
  * Edit: updates the design and this product's colours, photos and sizes. Older designs with several
  * one-colour products keep their siblings' titles in step. Stock changes keep how many pieces are out on rent.
+ * Returns the product's review status afterwards (see statusOnEdit).
  */
 export async function updateProduct(shopId: string, actorId: string, productId: string, input: NewDesign) {
   const p = await ownedProduct(shopId, productId);
@@ -226,17 +231,69 @@ export async function updateProduct(shopId: string, actorId: string, productId: 
   const { category, forWhom, colours } = await titleParts(input);
   const removed = p.images.filter((i) => !input.images.some((n) => n.key === i.key));
 
-  await db.$transaction(
+  const moderation = await db.$transaction(
     async (tx) => {
+      // locks the row so an admin decision can't interleave with this edit (theirs re-checks submittedAt after we commit)
+      await tx.$queryRaw`SELECT 1 FROM "Product" WHERE id = ${p.id} FOR UPDATE`;
+      const ids = { select: { id: true } } as const;
       const before = await tx.design.findUniqueOrThrow({
         where: { id: p.designId },
-        include: { products: { include: { colours: { orderBy: { sortOrder: "asc" } }, sizes: true } } },
+        include: {
+          forWhom: ids,
+          ageRanges: ids,
+          occasions: ids,
+          setPieces: ids,
+          fabrics: ids,
+          works: ids,
+          products: { include: { colours: { orderBy: { sortOrder: "asc" } }, sizes: true, images: { select: { key: true } } } },
+        },
       });
+      const self = before.products.find((x) => x.id === p.id)!;
+      const pick = (rows: { id: string }[]) => rows.map((r) => r.id);
+      const was: PublicContent = {
+        categoryId: before.categoryId,
+        forWhomIds: pick(before.forWhom),
+        ageRangeIds: pick(before.ageRanges),
+        occasionIds: pick(before.occasions),
+        setPieceIds: pick(before.setPieces),
+        fabricIds: pick(before.fabrics),
+        workIds: pick(before.works),
+        colourIds: pick(self.colours),
+        imageKeys: self.images.map((i) => i.key),
+        rentPerDay: before.rentPerDay,
+        rentPerWeek: before.rentPerWeek,
+        sellPrice: before.sellPrice,
+        securityDeposit: before.securityDeposit,
+        description: before.description,
+      };
+      const material = isMaterialEdit(was, {
+        categoryId: input.categoryId,
+        forWhomIds: [input.forWhomId],
+        ageRangeIds: input.ageRangeIds,
+        occasionIds: input.occasionIds,
+        setPieceIds: input.setPieceIds,
+        fabricIds: input.fabricIds,
+        workIds: input.workIds,
+        colourIds: input.colourIds,
+        imageKeys: input.images.map((i) => i.key),
+        rentPerDay: input.rentPerDay,
+        rentPerWeek: input.rentPerWeek,
+        sellPrice: input.sellPrice,
+        securityDeposit: input.securityDeposit,
+        description: input.description,
+      });
+      const directUpload = await readDirectUpload(tx);
+      const moderation = statusOnEdit(self.moderation, material, directUpload);
+      // new content (or a resubmission) gets a new version, so a reviewer looking at the old one can't approve it
+      const review = moderation === "pending" && (material || self.moderation !== "pending") ? { moderation, submittedAt: new Date() } : moderation !== self.moderation ? { moderation } : {};
+      // shortcut: legacy designs with several one-colour products share description and prices, so siblings go back to review too, even when only this product's photos changed
+      if (material && !directUpload)
+        await tx.product.updateMany({ where: { designId: p.designId, id: { not: p.id }, moderation: "approved" }, data: { moderation: "pending", submittedAt: new Date() } });
       await tx.design.update({ where: { id: p.designId }, data: designData(input, "set") });
       for (const sib of before.products)
         if (sib.id !== p.id) await tx.product.update({ where: { id: sib.id }, data: productTitle(category, sib.colours, forWhom) });
 
-      const old = before.products.find((x) => x.id === p.id)!.sizes;
+      const old = self.sizes;
       await tx.productSize.deleteMany({ where: { productId: p.id, sizeId: { notIn: input.sizes.map((s) => s.sizeId) } } });
       for (const s of input.sizes) {
         const prev = old.find((o) => o.sizeId === s.sizeId);
@@ -251,13 +308,15 @@ export async function updateProduct(shopId: string, actorId: string, productId: 
       await tx.productImage.createMany({ data: input.images.map((img, i) => ({ productId: p.id, key: img.key, ogKey: img.ogKey, sortOrder: i })) });
       await tx.product.update({
         where: { id: p.id },
-        data: { colours: { set: colours.map((c) => ({ id: c.id })) }, ...productTitle(category, colours, forWhom), lastSellerTouchAt: new Date() },
+        data: { colours: { set: colours.map((c) => ({ id: c.id })) }, ...productTitle(category, colours, forWhom), lastSellerTouchAt: new Date(), ...review },
       });
-      await audit(tx, { actorId, action: "product.edit", entity: "Product", entityId: p.id, before, after: input });
+      await audit(tx, { actorId, action: "product.edit", entity: "Product", entityId: p.id, before, after: { ...input, moderation, material } });
+      return moderation;
     },
     { timeout: 20_000 },
   );
   await Promise.allSettled(removed.flatMap((i) => [storage.delete(i.key), storage.delete(i.ogKey)]));
+  return moderation;
 }
 
 /** Daily job: sizes whose free-from date has come are fully available again. `today` is the local date (YYYY-MM-DD). */
