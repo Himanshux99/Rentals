@@ -64,10 +64,42 @@ async function padSquare(file: File): Promise<File> {
   return new File([blob], "square.jpg", { type: "image/jpeg" });
 }
 
-/** Main WebP (JPEG on WebViews that can't encode WebP) plus the OG JPEG. `ogOnly` returns just the JPEG as main. Product photos are padded to 1:1 first. */
+/** Fit the photo inside a 1200x630 (1.91:1) card, the ratio WhatsApp and Facebook want. Bars take the dominant colour of the nearest photo edge. */
+async function ogCard(file: File): Promise<File> {
+  const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
+  const [W, H] = [OG_EDGE, 630];
+  const s = Math.min(W / bmp.width, H / bmp.height);
+  const [w, h] = [Math.round(bmp.width * s), Math.round(bmp.height * s)];
+  const [x, y] = [(W - w) >> 1, (H - h) >> 1];
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext("2d", { willReadFrequently: true })!;
+  ctx.drawImage(bmp, x, y, w, h);
+  bmp.close();
+  const edge = (sx: number, sy: number, a: number, b: number) => dominant(ctx.getImageData(sx, sy, Math.max(1, a), Math.max(1, b)).data);
+  if (x > 0) {
+    const t = Math.round(w * 0.1);
+    ctx.fillStyle = edge(x, 0, t, H); // left
+    ctx.fillRect(0, 0, x, H);
+    ctx.fillStyle = edge(x + w - t, 0, t, H); // right
+    ctx.fillRect(x + w, 0, W - x - w, H);
+  } else if (y > 0) {
+    const t = Math.round(h * 0.1);
+    ctx.fillStyle = edge(0, y, W, t); // top
+    ctx.fillRect(0, 0, W, y);
+    ctx.fillStyle = edge(0, y + h - t, W, t); // bottom
+    ctx.fillRect(0, y + h, W, H - y - h);
+  }
+  const blob = await new Promise<Blob | null>((res) => c.toBlob(res, "image/jpeg", 0.95));
+  if (!blob) throw new Error("og card failed");
+  return new File([blob], "og.jpg", { type: "image/jpeg" });
+}
+
+/** Main WebP (JPEG on WebViews that can't encode WebP) plus the OG JPEG (1200x630). `ogOnly` returns just the JPEG as main. Product photos are padded to 1:1 first. */
 export async function compressImage(input: File, maxEdge: number, ogOnly = false): Promise<{ main: File; og?: File }> {
   const file = ogOnly ? input : await padSquare(input);
-  const og = await toJpeg(file, OG_EDGE, OG_MAX_MB);
+  const og = await toJpeg(ogOnly ? file : await ogCard(file), OG_EDGE, OG_MAX_MB);
   if (ogOnly) return { main: og };
   let main = await imageCompression(file, { maxWidthOrHeight: maxEdge, fileType: "image/webp", initialQuality: 0.8, useWebWorker: true });
   // canvas.toBlob hands back PNG when WebP encoding is missing
