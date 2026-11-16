@@ -7,7 +7,7 @@ import { RouteProgress } from "@/components/feedback/route-progress";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { LanguageChooser } from "@/components/app/language-chooser";
 import { LOCALE_COOKIE } from "@/i18n/request";
-import { Toaster } from "@/components/ui/sonner";
+import { DeferredToaster } from "@/components/feedback/deferred-toaster";
 import "./globals.css";
 
 // Josefin Sans sets all Latin text; the Noto pair backs it up for Devanagari so Hindi matches.
@@ -43,7 +43,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </Suspense>
           {children}
           <LanguageChooser hasCookie={jar.has(LOCALE_COOKIE)} />
-          <Toaster position="top-center" />
+          <DeferredToaster position="top-center" />
         </NextIntlClientProvider>
       </body>
     </html>

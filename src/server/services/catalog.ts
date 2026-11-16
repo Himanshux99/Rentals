@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { Prisma } from "@/generated/prisma/client";
 import { mainPrice, rankScore, type Filters } from "@/lib/catalog";
 import { db } from "../db";
@@ -52,6 +53,18 @@ const some = (slugs: string[]) => (slugs.length ? { some: { slug: { in: slugs } 
 /** Listing for home, shop page and Saved. Sorted and paged in memory. */
 // shortcut: loads every matching product to rank in JS; fine for one city's few thousand dresses, move ranking to SQL beyond that.
 export async function listCatalog(f: Filters, scope: { shopId?: string; codes?: string[] } = {}) {
+  const { ids: sortedIds, total } = await rankedIds(f, scope);
+  const pageIds = sortedIds.slice(0, f.page * PAGE_SIZE);
+  const cards = new Map((await db.product.findMany({ where: { ...visibleProduct, id: { in: pageIds } }, select: card })).map((c) => [c.id, c]));
+  // a product hidden between the two queries just drops out of the page
+  return { items: pageIds.flatMap((id) => cards.get(id) ?? []), total };
+}
+
+// shortcut: 60s shared cache of the ranking, so new or hidden listings take up to a minute to move; cards are re-read live. Use revalidateTag on seller/admin writes if that lag matters.
+const rankedIds = (f: Filters, scope: { shopId?: string; codes?: string[] }) =>
+  unstable_cache(() => loadRankedIds(f, scope), ["catalog-rank", JSON.stringify([{ ...f, page: 0 }, scope])], { revalidate: 60 })();
+
+async function loadRankedIds(f: Filters, scope: { shopId?: string; codes?: string[] }) {
   const ids = f.q ? await searchProductIds(f.q) : null;
   const where: Prisma.ProductWhereInput = {
     ...visibleProduct,
@@ -82,10 +95,7 @@ export async function listCatalog(f: Filters, scope: { shopId?: string; codes?: 
     if (f.sort === "priceDesc") return price(b) - price(a);
     return rankScore(a, now, env.STALE_AFTER_DAYS) - rankScore(b, now, env.STALE_AFTER_DAYS) || b.createdAt.getTime() - a.createdAt.getTime();
   });
-  const pageIds = sorted.slice(0, f.page * PAGE_SIZE).map((p) => p.id);
-  const cards = new Map((await db.product.findMany({ where: { ...visibleProduct, id: { in: pageIds } }, select: card })).map((c) => [c.id, c]));
-  // a product hidden between the two queries just drops out of the page
-  return { items: pageIds.flatMap((id) => cards.get(id) ?? []), total: sorted.length };
+  return { ids: sorted.map((p) => p.id), total: sorted.length };
 }
 
 /**

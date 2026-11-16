@@ -16,7 +16,7 @@ export async function SiteFooter() {
         <div className="flex flex-col items-start gap-4">
           <Link href="/" aria-label={common("appName")} className="inline-flex h-12 items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/vastra-logo.png" alt="" height={32} className="h-8 w-auto brightness-0 invert" />
+            <img src="/brand/vastra-logo.png" alt="" width={124} height={32} className="h-8 w-auto brightness-0 invert" />
           </Link>
           <p className="max-w-sm text-base text-white/80">{home("body")}</p>
           <Button variant="outline" nativeButton={false} render={<Link href="/sell" />} className="h-12 gap-2 border-white/40 bg-transparent px-5 text-base text-white hover:bg-white/10 hover:text-white">
