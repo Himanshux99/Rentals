@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SubmitButton } from "@/components/feedback/submit-button";
 import { getTranslations } from "next-intl/server";
 import { Heart, LogOut, Store } from "lucide-react";
 import { signOutAction } from "@/app/actions";
@@ -38,10 +39,10 @@ export async function AppBar({ signedIn = false, home = "/" }: { signedIn?: bool
         <LanguageToggle />
         {signedIn && (
           <form action={signOutAction}>
-            <Button type="submit" variant="ghost" className="h-12 min-w-12 gap-2 px-2.5 text-base text-white hover:bg-white/10 hover:text-white">
+            <SubmitButton variant="ghost" className="h-12 min-w-12 gap-2 px-2.5 text-base text-white hover:bg-white/10 hover:text-white">
               <LogOut className="size-5" />
               <span className="sr-only sm:not-sr-only">{t("signOut")}</span>
-            </Button>
+            </SubmitButton>
           </form>
         )}
       </nav>

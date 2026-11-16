@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SubmitButton } from "@/components/feedback/submit-button";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { BadgeCheck, LogIn, Plus, Search, Trash2 } from "lucide-react";
@@ -47,9 +48,9 @@ export default async function AdminShops({ searchParams }: PageProps<"/admin">) 
         <form className="flex gap-2" role="search">
           <input type="hidden" name="status" value={status} />
           <Input name="q" defaultValue={q} placeholder={t("searchShops")} aria-label={t("searchShops")} className="h-12 text-base md:text-base" />
-          <Button type="submit" variant="outline" className="h-12" aria-label={t("searchShops")}>
+          <SubmitButton variant="outline" className="h-12" aria-label={t("searchShops")}>
             <Search className="size-5" />
-          </Button>
+          </SubmitButton>
         </form>
       </div>
 
@@ -93,29 +94,29 @@ export default async function AdminShops({ searchParams }: PageProps<"/admin">) 
                     <div className="flex flex-wrap justify-end gap-1">
                       {s.status !== "approved" && (
                         <form action={changeShopStatus.bind(null, s.id, "approved")}>
-                          <Button type="submit" className="h-12 px-4 text-base">
+                          <SubmitButton className="h-12 px-4 text-base">
                             {t(s.status === "pending" ? "approve" : "restore")}
-                          </Button>
+                          </SubmitButton>
                         </form>
                       )}
                       {s.status !== "suspended" && (
                         <form action={changeShopStatus.bind(null, s.id, "suspended")}>
-                          <Button type="submit" variant="ghost" className="h-12 px-4 text-base">
+                          <SubmitButton variant="ghost" className="h-12 px-4 text-base">
                             {t("suspend")}
-                          </Button>
+                          </SubmitButton>
                         </form>
                       )}
                       <form action={toggleVerified.bind(null, s.id, !s.isVerified)}>
-                        <Button type="submit" variant="ghost" className="h-12 gap-1 px-3 text-base">
+                        <SubmitButton variant="ghost" className="h-12 gap-1 px-3 text-base">
                           <BadgeCheck className="size-5" />
                           {s.isVerified ? t("unverify") : t("verify")}
-                        </Button>
+                        </SubmitButton>
                       </form>
                       <form action={startImpersonating.bind(null, s.id)}>
-                        <Button type="submit" variant="ghost" className="h-12 gap-1 px-3 text-base">
+                        <SubmitButton variant="ghost" className="h-12 gap-1 px-3 text-base">
                           <LogIn className="size-5" />
                           {t("actAs")}
-                        </Button>
+                        </SubmitButton>
                       </form>
                       <ConfirmButton
                         action={deleteShopAction.bind(null, s.id)}

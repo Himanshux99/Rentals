@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import { SubmitButton } from "@/components/feedback/submit-button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Plus, Save, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { db } from "@/server/db";
@@ -31,10 +31,10 @@ export default async function OptionListPage({ params, searchParams }: PageProps
         <form action={addSynonymAction} className="flex max-w-xl flex-wrap gap-2">
           <Input name="term" required placeholder={t("synonymTerm")} aria-label={t("synonymTerm")} className={cn(field, "w-40")} />
           <Input name="target" required placeholder={t("synonymTarget")} aria-label={t("synonymTarget")} className={cn(field, "w-40")} />
-          <Button type="submit" className="h-12 gap-2 text-base">
+          <SubmitButton className="h-12 gap-2 text-base">
             <Plus className="size-5" />
             {t("add")}
-          </Button>
+          </SubmitButton>
         </form>
         <ul className="flex max-w-xl flex-col gap-px bg-border">
           {rows.map((r) => (
@@ -43,9 +43,9 @@ export default async function OptionListPage({ params, searchParams }: PageProps
                 {r.term} → <span className="font-semibold">{r.target}</span>
               </span>
               <form action={deleteSynonymAction.bind(null, r.id)}>
-                <Button type="submit" variant="ghost" className="h-12" aria-label={t("delete")}>
+                <SubmitButton variant="ghost" className="h-12" aria-label={t("delete")}>
                   <Trash2 className="size-5" />
-                </Button>
+                </SubmitButton>
               </form>
             </li>
           ))}
@@ -111,10 +111,10 @@ function RowForm({ list, cityId, row, nextOrder, labels }: RowProps) {
         <Checkbox name="isActive" value="on" defaultChecked={row?.isActive ?? true} className="size-6" />
         {labels.active}
       </label>
-      <Button type="submit" variant={row ? "outline" : "default"} className="h-12 gap-2 text-base">
+      <SubmitButton variant={row ? "outline" : "default"} className="h-12 gap-2 text-base">
         {row ? <Save className="size-5" /> : <Plus className="size-5" />}
         {row ? labels.save : labels.add}
-      </Button>
+      </SubmitButton>
       {row && <span className="text-sm text-muted-foreground">{row.slug}</span>}
     </form>
   );

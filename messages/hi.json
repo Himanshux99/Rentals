@@ -99,7 +99,7 @@
     "added": "{count, plural, one {ड्रेस जुड़ गई। अब यह सबको दिख रही है।} other {# ड्रेस जुड़ गईं। अब ये सबको दिख रही हैं।}}",
     "settings": "दुकान की सेटिंग",
     "myShopPage": "मेरी दुकान का पेज",
-    "shareShop": "WhatsApp पर भेजें",
+    "shareShop": "शेयर करें",
     "shareText": "{shop} की ड्रेस देखें: {url}",
     "staleTitle": "अभी भी मिल सकती है? छूकर बताएँ।",
     "staleConfirm": "हाँ, अभी भी है",
@@ -328,7 +328,7 @@
     "call": "कॉल करें",
     "save": "सेव करें",
     "saved": "सेव है",
-    "share": "WhatsApp पर भेजें",
+    "share": "शेयर करें",
     "report": "शिकायत",
     "askTitle": "दुकान से पूछें",
     "askBody": "Rent ki baat karne ke liye dukaan ko WhatsApp par message bhejein.",
@@ -427,5 +427,14 @@
     "deleteConfirmTitle": "अपनी दुकान हटाएँ?",
     "deleteConfirmBody": "{shop} और उसकी सारी ड्रेस छुप जाएँगी और आप साइन आउट हो जाएँगे।",
     "cancel": "रहने दें"
+  },
+  "feedback": {
+    "errorTitle": "कुछ गड़बड़ हो गई",
+    "errorBody": "यह लोड नहीं हो सका। इंटरनेट जाँचें और फिर कोशिश करें।",
+    "retry": "फिर कोशिश करें",
+    "home": "होम पर जाएँ",
+    "notFoundTitle": "पेज नहीं मिला",
+    "notFoundBody": "यह पेज मौजूद नहीं है या हटा दिया गया है।",
+    "actionFailed": "यह नहीं हो सका। कृपया फिर कोशिश करें।"
   }
 }

@@ -34,6 +34,16 @@ const card = {
   },
 } satisfies Prisma.ProductSelect;
 
+// Just what filtering by price and ranking need; the photo and shop joins are loaded for the visible page only.
+const rank = {
+  id: true,
+  isFeatured: true,
+  lastSellerTouchAt: true,
+  createdAt: true,
+  sizes: card.sizes,
+  design: { select: { rentPerDay: true, rentPerWeek: true, sellPrice: true } },
+} satisfies Prisma.ProductSelect;
+
 export type CatalogCard = Prisma.ProductGetPayload<{ select: typeof card }>;
 
 const some = (slugs: string[]) => (slugs.length ? { some: { slug: { in: slugs } } } : undefined);
@@ -60,10 +70,10 @@ export async function listCatalog(f: Filters, scope: { shopId?: string; codes?: 
       ...(f.mode === "buy" ? { sellPrice: { not: null } } : {}),
     },
   };
-  const rows = await db.product.findMany({ where, select: card });
+  const rows = await db.product.findMany({ where, select: rank });
 
   const now = new Date();
-  const price = (p: CatalogCard) => mainPrice(p.design)?.amount ?? 0;
+  const price = (p: (typeof rows)[number]) => mainPrice(p.design)?.amount ?? 0;
   const inRange = rows.filter((p) => (f.min == null || price(p) >= f.min) && (f.max == null || price(p) <= f.max));
   const sorted = inRange.sort((a, b) => {
     if (f.sort === "newest") return b.createdAt.getTime() - a.createdAt.getTime();
@@ -71,7 +81,10 @@ export async function listCatalog(f: Filters, scope: { shopId?: string; codes?: 
     if (f.sort === "priceDesc") return price(b) - price(a);
     return rankScore(a, now, env.STALE_AFTER_DAYS) - rankScore(b, now, env.STALE_AFTER_DAYS) || b.createdAt.getTime() - a.createdAt.getTime();
   });
-  return { items: sorted.slice(0, f.page * PAGE_SIZE), total: sorted.length };
+  const pageIds = sorted.slice(0, f.page * PAGE_SIZE).map((p) => p.id);
+  const cards = new Map((await db.product.findMany({ where: { id: { in: pageIds } }, select: card })).map((c) => [c.id, c]));
+  // a product hidden between the two queries just drops out of the page
+  return { items: pageIds.flatMap((id) => cards.get(id) ?? []), total: sorted.length };
 }
 
 /**
@@ -107,7 +120,19 @@ export async function searchProductIds(q: string): Promise<string[]> {
 }
 
 /** Option lists for the filter chips, plus the default city's areas. */
-export async function listFacets() {
+// shortcut: per-process 30s memo, so admin edits to option lists show up within 30s; use revalidateTag if that lag matters.
+let facetsMemo: { at: number; value: ReturnType<typeof loadFacets> } | undefined;
+export function listFacets() {
+  if (!facetsMemo || Date.now() - facetsMemo.at > 30_000) {
+    const value = loadFacets();
+    // a failed load must not stay cached
+    value.catch(() => { if (facetsMemo?.value === value) facetsMemo = undefined; });
+    facetsMemo = { at: Date.now(), value };
+  }
+  return facetsMemo.value;
+}
+
+async function loadFacets() {
   const active = { where: { isActive: true }, orderBy: { sortOrder: "asc" as const }, select: { slug: true, nameEn: true, nameHi: true } };
   const [categories, occasions, colours, forWhom, sizes, ageRanges, fabrics, works, city] = await Promise.all([
     db.category.findMany(active),

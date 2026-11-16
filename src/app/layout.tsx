@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans, Noto_Serif_Devanagari, Playfair_Display } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { cookies } from "next/headers";
+import { Suspense } from "react";
+import { RouteProgress } from "@/components/feedback/route-progress";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { LanguageChooser } from "@/components/app/language-chooser";
 import { LOCALE_COOKIE } from "@/i18n/request";
@@ -25,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const CLIENT_NAMESPACES = ["upload", "product_page", "phone", "onboarding", "product"] as const;
+const CLIENT_NAMESPACES = ["upload", "product_page", "phone", "onboarding", "product", "feedback"] as const;
 
 export const viewport: Viewport = { themeColor: "#0466c8" };
 
@@ -37,6 +39,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang={locale} className={`${playfair.variable} ${inter.variable} ${notoSerif.variable} ${notoSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider messages={clientMessages}>
+          <Suspense>
+            <RouteProgress />
+          </Suspense>
           {children}
           <LanguageChooser hasCookie={jar.has(LOCALE_COOKIE)} />
           <Toaster position="top-center" />

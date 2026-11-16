@@ -1,8 +1,10 @@
 import Image from "next/image";
+import { SubmitButton } from "@/components/feedback/submit-button";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
-import { CircleCheck, Clock, Copy, Eye, EyeOff, MessageCircle, Minus, PauseCircle, Pencil, Plus, Settings, Share2, Shirt, ShoppingBag, Store, Trash2, TriangleAlert } from "lucide-react";
+import { CircleCheck, Clock, Copy, Eye, EyeOff, MessageCircle, Minus, PauseCircle, Pencil, Plus, Settings, Shirt, ShoppingBag, Store, Trash2, TriangleAlert } from "lucide-react";
+import { WhatsAppIcon } from "@/components/app/whatsapp-icon";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,7 +77,7 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
           {t("myShopPage")}
         </Button>
         <Button variant="outline" nativeButton={false} render={<a href={waShare(t("shareText", { shop: shop.shopName, url: shopUrl }))} />} className="h-12 gap-2 text-base">
-          <Share2 className="size-5" />
+          <WhatsAppIcon className="text-[var(--whatsapp)]" />
           {t("shareShop")}
         </Button>
         <Button variant="ghost" nativeButton={false} render={<Link href="/seller/settings" />} className="h-12 gap-2 text-base">
@@ -109,9 +111,9 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
                     <AlertTitle className="text-base">{t("staleTitle")}</AlertTitle>
                     <AlertDescription>
                       <form action={confirmAction.bind(null, p.id)}>
-                        <Button type="submit" className="mt-2 h-12 text-base">
+                        <SubmitButton className="mt-2 h-12 text-base">
                           {t("staleConfirm")}
-                        </Button>
+                        </SubmitButton>
                       </form>
                     </AlertDescription>
                   </Alert>
@@ -149,14 +151,14 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
                         </span>
                         <div className="flex">
                           <form action={availableAction.bind(null, s.id, -1)}>
-                            <Button type="submit" variant="outline" className="size-12" disabled={s.availableCount <= 0} aria-label={t("oneOut")}>
+                            <SubmitButton variant="outline" className="size-12" disabled={s.availableCount <= 0} aria-label={t("oneOut")}>
                               <Minus className="size-5" />
-                            </Button>
+                            </SubmitButton>
                           </form>
                           <form action={availableAction.bind(null, s.id, 1)}>
-                            <Button type="submit" variant="outline" className="size-12" disabled={s.availableCount >= s.stockCount} aria-label={t("oneBack")}>
+                            <SubmitButton variant="outline" className="size-12" disabled={s.availableCount >= s.stockCount} aria-label={t("oneBack")}>
                               <Plus className="size-5" />
-                            </Button>
+                            </SubmitButton>
                           </form>
                         </div>
                       </div>
@@ -166,17 +168,17 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
                             {s.freeFromDate ? t("freeFromSet", { date: format.dateTime(s.freeFromDate, { day: "numeric", month: "short", timeZone: "UTC" }) }) : t("freeFrom")}
                           </label>
                           <Input id={`free-${s.id}`} type="date" name="date" min={today} defaultValue={s.freeFromDate?.toISOString().slice(0, 10)} className="h-12 w-auto text-base md:text-base" />
-                          <Button type="submit" variant="secondary" className="h-12 text-base">
+                          <SubmitButton variant="secondary" className="h-12 text-base">
                             {t("saveDate")}
-                          </Button>
+                          </SubmitButton>
                         </form>
                       )}
                       {forSale && s.stockCount > 0 && (
                         <form action={soldAction.bind(null, s.id)}>
-                          <Button type="submit" variant="ghost" className="h-12 gap-2 text-base">
+                          <SubmitButton variant="ghost" className="h-12 gap-2 text-base">
                             <ShoppingBag className="size-5" />
                             {t("markSold")}
-                          </Button>
+                          </SubmitButton>
                         </form>
                       )}
                     </li>
@@ -186,10 +188,10 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
                 <div className="flex flex-wrap gap-1">
                   {!p.hiddenByAdmin && (
                     <form action={hideAction.bind(null, p.id, !p.isHidden)}>
-                      <Button type="submit" variant="ghost" className="h-12 gap-2 text-base">
+                      <SubmitButton variant="ghost" className="h-12 gap-2 text-base">
                         {p.isHidden ? <Eye className="size-5" /> : <EyeOff className="size-5" />}
                         {p.isHidden ? t("show") : t("hide")}
-                      </Button>
+                      </SubmitButton>
                     </form>
                   )}
                   <Button variant="ghost" nativeButton={false} render={<Link href={`/seller/products/${p.id}/edit`} />} className="h-12 gap-2 text-base">

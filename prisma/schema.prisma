@@ -156,6 +156,7 @@ model Shop {
   designs       Design[]
 
   @@index([status])
+  @@index([areaId])
 }
 
 model Design {
@@ -180,6 +181,9 @@ model Design {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   products        Product[]
+
+  @@index([shopId])
+  @@index([categoryId])
 }
 
 model Product {
@@ -206,6 +210,7 @@ model Product {
   reports           Report[]
 
   @@index([isHidden])
+  @@index([designId])
 }
 
 model ProductSize {

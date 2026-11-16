@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
+import { SubmitButton } from "@/components/feedback/submit-button";
 import { getTranslations } from "next-intl/server";
 import { ShieldAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { AppBar } from "@/components/app/app-bar";
 import { stopImpersonating } from "@/app/admin/actions";
 import { requireRole } from "@/server/auth";
@@ -22,9 +22,9 @@ export default async function SellerLayout({ children }: LayoutProps<"/seller">)
             {t("actingAs", { shop: shop.shopName })}
           </span>
           <form action={stopImpersonating}>
-            <Button type="submit" variant="secondary" className="h-12 text-base">
+            <SubmitButton variant="secondary" className="h-12 text-base">
               {t("stopActing")}
-            </Button>
+            </SubmitButton>
           </form>
         </div>
       )}

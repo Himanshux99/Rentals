@@ -3,7 +3,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { BadgeCheck, MapPin, MessageCircle, Navigation, Share2 } from "lucide-react";
+import { BadgeCheck, MapPin, MessageCircle, Navigation } from "lucide-react";
+import { WhatsAppIcon } from "@/components/app/whatsapp-icon";
 import { Button } from "@/components/ui/button";
 import { AppBar } from "@/components/app/app-bar";
 import { CatalogListing } from "@/components/app/catalog-listing";
@@ -73,7 +74,7 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/sho
                 </Button>
               )}
               <Button variant="outline" nativeButton={false} render={<a href={waShare(`${shop.shopName} ${url}`)} />} className="h-12 gap-2 text-base">
-                <Share2 className="size-5" />
+                <WhatsAppIcon className="text-[var(--whatsapp)]" />
                 {t("share")}
               </Button>
             </div>

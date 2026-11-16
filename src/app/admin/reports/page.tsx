@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import { SubmitButton } from "@/components/feedback/submit-button";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Check, EyeOff, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ReportStatus } from "@/generated/prisma/client";
 import { listReports } from "@/server/services/admin";
@@ -65,23 +65,23 @@ export default async function AdminReports({ searchParams }: PageProps<"/admin/r
                       <div className="flex justify-end gap-1">
                         {!r.product.hiddenByAdmin && (
                           <form action={closeReportAction.bind(null, r.id, "resolved", true)}>
-                            <Button type="submit" variant="destructive" className="h-12 gap-1 px-3 text-base">
+                            <SubmitButton variant="destructive" className="h-12 gap-1 px-3 text-base">
                               <EyeOff className="size-5" />
                               {t("hideAndResolve")}
-                            </Button>
+                            </SubmitButton>
                           </form>
                         )}
                         <form action={closeReportAction.bind(null, r.id, "resolved", false)}>
-                          <Button type="submit" variant="ghost" className="h-12 gap-1 px-3 text-base">
+                          <SubmitButton variant="ghost" className="h-12 gap-1 px-3 text-base">
                             <Check className="size-5" />
                             {t("resolve")}
-                          </Button>
+                          </SubmitButton>
                         </form>
                         <form action={closeReportAction.bind(null, r.id, "dismissed", false)}>
-                          <Button type="submit" variant="ghost" className="h-12 gap-1 px-3 text-base">
+                          <SubmitButton variant="ghost" className="h-12 gap-1 px-3 text-base">
                             <X className="size-5" />
                             {t("dismiss")}
-                          </Button>
+                          </SubmitButton>
                         </form>
                       </div>
                     )}

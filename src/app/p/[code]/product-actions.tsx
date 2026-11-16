@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Flag, Heart, MessageCircle, Phone, Send, Share2 } from "lucide-react";
+import { Flag, Heart, MessageCircle, Phone, Send } from "lucide-react";
+import { WhatsAppIcon } from "@/components/app/whatsapp-icon";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -33,6 +34,7 @@ function beacon(data: object) {
 
 export function ProductActions({ code, title, price, cover, url, whatsappPhone, sizes }: Props) {
   const t = useTranslations("product_page");
+  const tf = useTranslations("feedback");
   const locale = useLocale() as "hi" | "en";
   const [sizeId, setSizeId] = useState<string | null>(null);
   const [ask, setAsk] = useState(false);
@@ -58,9 +60,14 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
 
   function sendReport(reason: string) {
     start(async () => {
-      const r = await reportAction(code, reason);
-      setReport(false);
-      toast(r === "ok" ? t("reportThanks") : t("reportLimited"));
+      try {
+        const r = await reportAction(code, reason);
+        setReport(false);
+        toast(r === "ok" ? t("reportThanks") : t("reportLimited"));
+      } catch {
+        // keep the sheet open so the reader can retry
+        toast.error(tf("actionFailed"));
+      }
     });
   }
 
@@ -80,7 +87,7 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
         </section>
       )}
 
-      <Button onClick={() => setAsk(true)} className="h-auto min-h-14 gap-2 whitespace-normal bg-[var(--whatsapp)]py-2 text-center text-lg text-white hover:bg-[var(--whatsapp)]/85">
+      <Button onClick={() => setAsk(true)} className="h-auto min-h-14 gap-2 whitespace-normal bg-[var(--whatsapp)] py-2 text-center text-lg text-white hover:bg-[var(--whatsapp)]/85">
         <MessageCircle className="size-6 shrink-0" />
         {t("ask")}
       </Button>
@@ -91,11 +98,11 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
           {t("call")}
         </Button>
         <Button variant="outline" onClick={toggleSave} aria-pressed={saved} className="h-auto min-h-12 gap-2 whitespace-normal py-2 text-center text-base">
-          <Heart className={saved ? "size-5 shrink-0 fill-current text-[var(--gold)]" : "size-5 shrink-0"} />
+          <Heart className={saved ? "size-5 shrink-0 animate-heart-pop fill-current text-[var(--gold)]" : "size-5 shrink-0"} />
           {saved ? t("saved") : t("save")}
         </Button>
         <Button variant="outline" nativeButton={false} render={<a href={waShare(`${title} ${url}`)} target="_blank" rel="noopener noreferrer" />} className="h-auto min-h-12 gap-2 whitespace-normal py-2 text-center text-base">
-          <Share2 className="size-5 shrink-0" />
+          <WhatsAppIcon className="shrink-0 text-[var(--whatsapp)]" />
           {t("share")}
         </Button>
         <Button variant="outline" onClick={() => setReport(true)} className="h-auto min-h-12 gap-2 whitespace-normal py-2 text-center text-base">
@@ -127,7 +134,7 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
             {t("sendHint")}
           </p>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
-            <Button onClick={send} className="h-auto min-h-14 gap-2 whitespace-normal bg-[var(--whatsapp)]py-2 text-center text-lg text-white hover:bg-[var(--whatsapp)]/85">
+            <Button onClick={send} className="h-auto min-h-14 gap-2 whitespace-normal bg-[var(--whatsapp)] py-2 text-center text-lg text-white hover:bg-[var(--whatsapp)]/85">
               <MessageCircle className="size-6 shrink-0" />
               {t("send")}
             </Button>

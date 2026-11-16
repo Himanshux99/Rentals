@@ -99,7 +99,7 @@
     "added": "{count, plural, one {Dress added. It's live now.} other {# dresses added. They're live now.}}",
     "settings": "Shop settings",
     "myShopPage": "My shop page",
-    "shareShop": "Share on WhatsApp",
+    "shareShop": "Share",
     "shareText": "See dresses at {shop}: {url}",
     "staleTitle": "Still available? Tap to confirm.",
     "staleConfirm": "Yes, still available",
@@ -324,11 +324,11 @@
     "pickSize": "Size",
     "left": "{count} free",
     "rentedOut": "Rented",
-    "ask": "WhatsApp पर पूछें / Ask on WhatsApp",
+    "ask": "Ask on WhatsApp",
     "call": "Call",
     "save": "Save",
     "saved": "Saved",
-    "share": "Share on WhatsApp",
+    "share": "Share",
     "report": "Report",
     "askTitle": "Ask the shop",
     "askBody": "To talk about renting, send the shop a message on WhatsApp.",
@@ -427,5 +427,14 @@
     "deleteConfirmTitle": "Delete your shop?",
     "deleteConfirmBody": "{shop} and all its dresses will be hidden and you will be signed out.",
     "cancel": "Cancel"
+  },
+  "feedback": {
+    "errorTitle": "Something went wrong",
+    "errorBody": "We could not load this. Check your connection and try again.",
+    "retry": "Try again",
+    "home": "Go to home",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "This page does not exist or was removed.",
+    "actionFailed": "That did not work. Please try again."
   }
 }

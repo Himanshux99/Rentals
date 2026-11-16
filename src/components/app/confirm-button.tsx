@@ -1,6 +1,8 @@
 "use client";
 import { useState, useTransition } from "react";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -14,6 +16,7 @@ export function ConfirmButton(props: {
   cancel: string;
   className?: string;
 }) {
+  const tf = useTranslations("feedback");
   const [open, setOpen] = useState(false);
   const [pending, start] = useTransition();
   return (
@@ -30,8 +33,12 @@ export function ConfirmButton(props: {
             disabled={pending}
             onClick={() =>
               start(async () => {
-                await props.action();
-                setOpen(false);
+                try {
+                  await props.action();
+                  setOpen(false);
+                } catch {
+                  toast.error(tf("actionFailed"));
+                }
               })
             }
             className="h-12 text-base"
