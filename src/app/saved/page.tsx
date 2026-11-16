@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { AppBar } from "@/components/app/app-bar";
 import { ProductCard, ProductGrid } from "@/components/app/product-card";
@@ -8,7 +10,9 @@ import { parseFilters } from "@/lib/catalog";
 import { listCatalog } from "@/server/services/catalog";
 import { SavedSync } from "./saved-sync";
 
-export const metadata: Metadata = { title: "Saved", robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getTranslations("saved"))("title"), robots: { index: false } };
+}
 
 // Saved codes live in localStorage; SavedSync copies them into ?codes= so the server can render the cards.
 export default async function SavedPage({ searchParams }: PageProps<"/saved">) {
@@ -24,14 +28,19 @@ export default async function SavedPage({ searchParams }: PageProps<"/saved">) {
   return (
     <>
       <AppBar />
-      <main className="flex flex-1 flex-col gap-6 px-4 pb-8 pt-2 sm:px-8">
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 pb-8 pt-6 sm:px-8">
         <SavedSync current={raw} />
         <h1 className="flex items-center gap-2 text-3xl font-semibold sm:text-4xl">
           <Heart className="size-7 text-[var(--gold)]" />
           {t("title")}
         </h1>
         {ordered.length === 0 ? (
-          <p className="bg-card px-6 py-10 text-lg">{t("empty")}</p>
+          <section className="flex flex-col items-start gap-4 bg-card px-6 py-10">
+            <p className="text-lg">{t("empty")}</p>
+            <Button nativeButton={false} render={<Link href="/" />} className="h-12 text-base">
+              {t("browse")}
+            </Button>
+          </section>
         ) : (
           <ProductGrid>
             {ordered.map((p) => (

@@ -7,7 +7,9 @@
     "back": "Back",
     "saved": "Saved",
     "customerSite": "Customer site",
-    "sellerAccount": "Seller account"
+    "sellerAccount": "Seller account",
+    "skip": "Skip to content",
+    "verified": "Verified"
   },
   "sell": {
     "title": "Seller account",
@@ -301,6 +303,10 @@
     "apply": "Show dresses",
     "clear": "Clear all filters",
     "sort": "Sort",
+    "groupOccasion": "Occasion",
+    "groupCategory": "Category",
+    "groupColour": "Colour",
+    "groupFor": "For whom",
     "sort_recommended": "Best match",
     "sort_newest": "Newest",
     "sort_priceAsc": "Price: low to high",
@@ -365,6 +371,7 @@
   },
   "saved": {
     "title": "Saved dresses",
+    "browse": "Browse dresses",
     "empty": "Nothing saved yet. Tap Save on a dress to keep it here. Saved dresses stay on this phone only."
   },
   "pages": {

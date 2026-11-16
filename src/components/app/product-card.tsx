@@ -29,11 +29,11 @@ export async function AvailabilityBadge({ sizes, className }: { sizes: CatalogCa
 }
 
 export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: boolean }) {
-  const [hi, t] = await Promise.all([getLocale().then((l) => l === "hi"), getTranslations("catalog")]);
+  const [hi, t, tc] = await Promise.all([getLocale().then((l) => l === "hi"), getTranslations("catalog"), getTranslations("common")]);
   const cover = p.images[0];
   const shop = p.design.shop;
   return (
-    <li className="flex flex-col rounded-2xl border border-border bg-card p-2 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[0_8px_24px_rgba(18,59,90,0.14)]">
+    <li className="flex flex-col rounded-2xl bg-card p-2 shadow-[var(--shadow-card)] transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] active:translate-y-0 active:scale-[0.99] motion-reduce:transition-none">
       <Link href={`/p/${p.code}`} className="flex flex-1 flex-col gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-ring">
         <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
           {cover && (
@@ -43,7 +43,7 @@ export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: 
         </div>
         <div className="flex flex-1 flex-col gap-1 px-2">
           <p className="text-base font-semibold leading-snug">{hi ? p.titleHi : p.titleEn}</p>
-          <p className="text-xl font-bold">
+          <p className="text-xl font-bold tabular-nums">
             <PriceText prices={p.design} />
           </p>
           <p className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -51,7 +51,7 @@ export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: 
             <span className="truncate">
               {shop.shopName}, {hi ? shop.area.nameHi : shop.area.nameEn}
             </span>
-            {shop.isVerified && <BadgeCheck className="size-4 shrink-0 text-[var(--gold)]" aria-label="verified" />}
+            {shop.isVerified && <BadgeCheck className="size-4 shrink-0 text-[var(--gold)]" aria-label={tc("verified")} />}
           </p>
         </div>
         <span className="mt-1 inline-flex h-12 items-center justify-center rounded-xl bg-primary text-base font-semibold text-primary-foreground">{t("rentNow")}</span>

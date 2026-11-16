@@ -52,8 +52,8 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
   const title = hi ? p.titleHi : p.titleEn;
   const rupee = (n: number) => `₹${n.toLocaleString("en-IN")}`;
   const prices = [
-    d.rentPerDay != null && [t("rentPerDay"), `${rupee(d.rentPerDay)} / ${t("din")}`],
-    d.rentPerWeek != null && [t("rentPerWeek"), `${rupee(d.rentPerWeek)} / ${t("hafta")}`],
+    d.rentPerDay != null && [t("rentPerDay"), `${rupee(d.rentPerDay)} / ${t("din")}`],
+    d.rentPerWeek != null && [t("rentPerWeek"), `${rupee(d.rentPerWeek)} / ${t("hafta")}`],
     d.sellPrice != null && [t("sellPrice"), rupee(d.sellPrice)],
     d.securityDeposit != null && [t("deposit"), rupee(d.securityDeposit)],
   ].filter((x): x is string[] => !!x);
@@ -68,13 +68,13 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
   return (
     <>
       <AppBar />
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-8 pt-2 sm:px-8 md:grid md:grid-cols-2 md:gap-10">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-8 pt-6 sm:px-8 sm:pt-8 md:grid md:grid-cols-2 md:gap-10">
         <Gallery images={p.images.map((img) => imageSrc(img.key))} title={title} />
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <AvailabilityBadge sizes={p.sizes} className="w-fit" />
-            <h1 className="text-3xl font-semibold sm:text-4xl">{title}</h1>
+            <h1 className="break-words text-3xl font-semibold sm:text-4xl">{title}</h1>
             <p className="text-base text-muted-foreground tabular-nums">
               {t("code")}: {p.code}
             </p>
@@ -105,7 +105,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
             {prices.map(([k, v]) => (
               <div key={k} className="flex flex-col bg-card p-3">
                 <dt className="text-sm text-muted-foreground">{k}</dt>
-                <dd className="text-xl font-bold text-primary">{v}</dd>
+                <dd className="text-xl font-bold tabular-nums text-primary">{v}</dd>
               </div>
             ))}
           </dl>
@@ -138,9 +138,9 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
 
           <Link href={`/shop/${d.shop.slug}`} className="flex items-center gap-3 bg-card p-4 hover:bg-accent">
             <Store className="size-8 shrink-0 text-[var(--gold)]" />
-            <span className="flex flex-col">
+            <span className="flex min-w-0 flex-col">
               <span className="flex items-center gap-1 text-lg font-semibold">
-                {d.shop.shopName}
+                <span translate="no" className="min-w-0 break-words">{d.shop.shopName}</span>
                 {d.shop.isVerified && <BadgeCheck className="size-5 text-[var(--gold)]" aria-label={t("verified")} />}
               </span>
               <span className="flex items-center gap-1 text-base text-muted-foreground">

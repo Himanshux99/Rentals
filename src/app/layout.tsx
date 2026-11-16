@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const CLIENT_NAMESPACES = ["upload", "product_page", "phone", "onboarding", "product"] as const;
 
-export const viewport: Viewport = { themeColor: "#0e3758" };
+export const viewport: Viewport = { themeColor: "#0466c8" };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [locale, jar, messages] = await Promise.all([getLocale(), cookies(), getMessages()]);

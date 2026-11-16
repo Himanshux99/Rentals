@@ -16,7 +16,7 @@ export async function AppBar({ signedIn = false, home = "/" }: { signedIn?: bool
         <BackButton label={t("back")} />
         <Wordmark href={home} />
       </div>
-      <div className="flex shrink-0 items-center">
+      <nav className="flex shrink-0 items-center">
         {!signedIn && (
           <Button variant="ghost" nativeButton={false} render={<Link href="/saved" />} className="h-12 min-w-12 gap-2 px-2.5 text-base text-white hover:bg-white/10 hover:text-white">
             <Heart className="size-5" />
@@ -44,7 +44,7 @@ export async function AppBar({ signedIn = false, home = "/" }: { signedIn?: bool
             </Button>
           </form>
         )}
-      </div>
+      </nav>
       </div>
     </header>
   );

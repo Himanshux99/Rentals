@@ -20,12 +20,12 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
   const arrow = "size-12 rounded-full border-0 bg-black/60 text-white hover:bg-black/80 disabled:hidden [&_svg]:size-6";
 
   return (
-    <div className="-mx-4 flex flex-col gap-3 md:mx-0" aria-label={t("photos")}>
+    <div className="-mx-4 flex flex-col gap-3 md:mx-0" role="region" aria-roledescription="carousel" aria-label={t("photos")}>
       <Carousel setApi={setApi} className="relative">
         <CarouselContent className="ml-0">
           {images.map((src, i) => (
             <CarouselItem key={src} className="relative aspect-square bg-muted pl-0">
-              <Image src={src} alt={i === 0 ? title : ""} fill priority={i === 0} sizes="(min-width: 768px) 50vw, 100vw" className="object-contain" />
+              <Image src={src} alt={i === 0 ? title : `${title} ${i + 1}`} fill priority={i === 0} sizes="(min-width: 768px) 50vw, 100vw" className="object-contain" />
             </CarouselItem>
           ))}
         </CarouselContent>
@@ -43,7 +43,7 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
         <div className="flex justify-center gap-1">
           {images.map((_, i) => (
             // 48px tap target around a small dot
-            <button key={i} type="button" onClick={() => api?.scrollTo(i)} aria-label={`${t("photos")} ${i + 1}`} aria-current={i === current} className="flex size-8 items-center justify-center">
+            <button key={i} type="button" onClick={() => api?.scrollTo(i)} aria-label={`${t("photos")} ${i + 1}`} aria-current={i === current} className="flex size-12 items-center justify-center">
               <span className={`size-3 rounded-full ${i === current ? "bg-primary" : "bg-border"}`} />
             </button>
           ))}

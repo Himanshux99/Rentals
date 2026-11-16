@@ -151,6 +151,8 @@ export async function CatalogListing({
           defaultValue={f.q}
           placeholder={t("searchPlaceholder")}
           aria-label={t("search")}
+          autoComplete="off"
+          enterKeyHint="search"
           className="h-12 rounded-xl bg-card text-base md:text-base"
         />
         <Button type="submit" className="h-12 px-4" aria-label={t("search")}>
@@ -159,13 +161,13 @@ export async function CatalogListing({
       </form>
 
       <div className="-mx-4 flex flex-col gap-2 px-4">
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div role="group" aria-label={t("groupOccasion")} className="flex gap-2 overflow-x-auto pb-1">
           {row("occasion", facets.occasions)}
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div role="group" aria-label={t("groupCategory")} className="flex gap-2 overflow-x-auto pb-1">
           {row("category", facets.categories)}
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div role="group" aria-label={t("groupColour")} className="flex gap-2 overflow-x-auto pb-1">
           {facets.colours.map((c) => (
             <ChipLink
               key={c.slug}
@@ -182,14 +184,14 @@ export async function CatalogListing({
             </ChipLink>
           ))}
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div role="group" aria-label={t("groupFor")} className="flex gap-2 overflow-x-auto pb-1">
           {row("for", facets.forWhom)}
         </div>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[18rem_1fr]">
         <aside
-          className="hidden h-fit flex-col gap-5 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] lg:flex"
+          className="hidden h-fit flex-col gap-5 rounded-2xl bg-card p-5 shadow-[var(--shadow-card)] lg:flex"
           aria-label={t("filters")}
         >
           <h2 className="flex items-center gap-2 font-sans text-base font-semibold">
@@ -212,7 +214,7 @@ export async function CatalogListing({
                 <SlidersHorizontal className="size-5" />
                 {t("filters")}
                 {panelCount > 0 && (
-                  <span className="bg-primary px-2 text-[var(--haldi-ink)]">
+                  <span className="bg-primary px-2 text-primary-foreground">
                     {panelCount}
                   </span>
                 )}
@@ -238,8 +240,8 @@ export async function CatalogListing({
                 {t("clear")}
               </Button>
             )}
-            <div className="flex items-center gap-1 overflow-x-auto">
-              <ArrowDownUp className="size-5 shrink-0" aria-label={t("sort")} />
+            <div role="group" aria-label={t("sort")} className="flex items-center gap-1 overflow-x-auto">
+              <ArrowDownUp className="size-5 shrink-0" aria-hidden />
               {SORTS.map((s) => (
                 <ChipLink
                   key={s}

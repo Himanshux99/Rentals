@@ -45,11 +45,11 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/sho
   return (
     <>
       <AppBar />
-      <main className="flex flex-1 flex-col gap-6 px-4 pb-8 pt-2 sm:px-8">
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 pb-8 pt-6 sm:px-8">
         <section className="flex flex-col gap-4 bg-card sm:flex-row">
           {shop.shopPhotoKey && (
             <div className="relative aspect-[4/3] w-full shrink-0 sm:w-72">
-              <Image src={imageSrc(shop.shopPhotoKey)} alt="" fill priority sizes="(min-width: 640px) 18rem, 100vw" className="object-cover" />
+              <Image src={imageSrc(shop.shopPhotoKey)} alt={shop.shopName} fill priority sizes="(min-width: 640px) 18rem, 100vw" className="object-cover" />
             </div>
           )}
           <div className="flex flex-col gap-3 p-4">
@@ -62,7 +62,7 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/sho
               {shop.addressLine}, {hi ? shop.area.nameHi : shop.area.nameEn}
             </p>
             <div className="flex flex-wrap gap-2">
-              <Button nativeButton={false} render={<a href={waLink(shop.whatsappPhone, t("hello"))} />} className="h-12 gap-2 bg-[#1f8a4c] text-base text-white hover:bg-[#1f8a4c]/85">
+              <Button nativeButton={false} render={<a href={waLink(shop.whatsappPhone, t("hello"))} />} className="h-12 gap-2 bg-[var(--whatsapp)] text-base text-white hover:bg-[var(--whatsapp)]/85">
                 <MessageCircle className="size-5" />
                 {t("whatsapp")}
               </Button>

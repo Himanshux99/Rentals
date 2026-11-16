@@ -69,7 +69,7 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
       {sizes.length > 0 && (
         <section className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">{t("pickSize")}</h2>
-          <ToggleGroup value={sizeId ? [sizeId] : []} onValueChange={(v: string[]) => setSizeId(v[0] ?? null)} className="flex-wrap">
+          <ToggleGroup aria-label={t("pickSize")} value={sizeId ? [sizeId] : []} onValueChange={(v: string[]) => setSizeId(v[0] ?? null)} className="flex-wrap">
             {sizes.map((s) => (
               <ToggleGroupItem key={s.id} value={s.id} className={`${chip} flex-col gap-0 py-1 leading-tight`}>
                 <span>{s.name}</span>
@@ -80,7 +80,7 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
         </section>
       )}
 
-      <Button onClick={() => setAsk(true)} className="h-auto min-h-14 gap-2 whitespace-normal bg-[#1f8a4c] py-2 text-center text-lg text-white hover:bg-[#1f8a4c]/85">
+      <Button onClick={() => setAsk(true)} className="h-auto min-h-14 gap-2 whitespace-normal bg-[var(--whatsapp)]py-2 text-center text-lg text-white hover:bg-[var(--whatsapp)]/85">
         <MessageCircle className="size-6 shrink-0" />
         {t("ask")}
       </Button>
@@ -112,7 +112,7 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
           </DialogHeader>
           <div className="flex gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element -- already-loaded cover */}
-            {cover && <img src={cover} alt="" className="aspect-[3/4] w-20 object-cover" />}
+            {cover && <img src={cover} alt="" width={80} height={107} className="aspect-[3/4] w-20 object-cover" />}
             <div className="flex flex-col gap-1 text-base">
               <p className="font-semibold">{title}</p>
               <p className="text-muted-foreground">
@@ -123,11 +123,11 @@ export function ProductActions({ code, title, price, cover, url, whatsappPhone, 
             </div>
           </div>
           <p className="flex items-center gap-2 bg-muted p-3 text-base">
-            <Send className="size-5 shrink-0 text-[#1f8a4c]" />
+            <Send className="size-5 shrink-0 text-[var(--whatsapp)]" />
             {t("sendHint")}
           </p>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
-            <Button onClick={send} className="h-auto min-h-14 gap-2 whitespace-normal bg-[#1f8a4c] py-2 text-center text-lg text-white hover:bg-[#1f8a4c]/85">
+            <Button onClick={send} className="h-auto min-h-14 gap-2 whitespace-normal bg-[var(--whatsapp)]py-2 text-center text-lg text-white hover:bg-[var(--whatsapp)]/85">
               <MessageCircle className="size-6 shrink-0" />
               {t("send")}
             </Button>
