@@ -8,6 +8,8 @@ import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { LanguageChooser } from "@/components/app/language-chooser";
 import { LOCALE_COOKIE } from "@/i18n/request";
 import { DeferredToaster } from "@/components/feedback/deferred-toaster";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 // Josefin Sans sets all Latin text; the Noto pair backs it up for Devanagari so Hindi matches.
@@ -45,6 +47,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <LanguageChooser hasCookie={jar.has(LOCALE_COOKIE)} />
           <DeferredToaster position="top-center" />
         </NextIntlClientProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
