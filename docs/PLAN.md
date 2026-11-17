@@ -129,6 +129,9 @@ All configuration is read and checked once, in `src/server/env.ts`, with a Zod s
 | `NEXT_PUBLIC_IMAGE_MAX_EDGE` | `1600` | Browser resize target for main images |
 | `NEXT_PUBLIC_IMAGE_MAX_UPLOAD_MB` | `5` | Upload limit, enforced by the signed URL |
 | `NEXT_PUBLIC_MAX_IMAGES_PER_PRODUCT` | `8` | The §15 "decided later" image limit, set now and changeable later |
+| `NEXT_PUBLIC_MAX_VIDEOS_PER_PRODUCT` | `2` | Videos allowed per product; they count inside the image limit |
+| `NEXT_PUBLIC_VIDEO_MAX_UPLOAD_MB` | `50` | Video upload limit, enforced by the signed URL |
+| `NEXT_PUBLIC_VIDEO_MAX_SECONDS` | `60` | Longest video the browser accepts |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | none | Google sign-in |
 | `AUTH_SECRET` | none | Session signing |
 | `SESSION_MAX_AGE_DAYS` | `30` | Seller cookie lifetime |

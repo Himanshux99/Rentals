@@ -13,6 +13,7 @@ export type Storage = {
 
 export const ALLOWED_IMAGE_TYPES = ["image/webp", "image/jpeg"] as const;
 export const MAX_UPLOAD_BYTES = env.NEXT_PUBLIC_IMAGE_MAX_UPLOAD_MB * 1024 * 1024;
+export const MAX_VIDEO_BYTES = env.NEXT_PUBLIC_VIDEO_MAX_UPLOAD_MB * 1024 * 1024;
 
 export const storage: Storage = env.STORAGE_DRIVER === "r2" ? r2Storage() : localStorage();
 

@@ -1,8 +1,10 @@
 import "server-only";
+import { checkMedia } from "@/lib/media";
 import { productCode, productTitle } from "@/lib/product";
 import { isMaterialEdit, statusOnCreate, statusOnEdit, type PublicContent } from "@/lib/moderation";
 import { isOwnKey, productPrefix } from "@/lib/upload-key";
 import { db } from "../db";
+import { env } from "../env";
 import { storage } from "../storage";
 import { audit } from "./audit";
 import { readDirectUpload } from "./moderation";
@@ -21,9 +23,12 @@ export type NewDesign = {
   sellPrice: number | null;
   securityDeposit: number | null;
   description: string | null;
-  images: { key: string; ogKey: string }[];
+  images: { kind: "image" | "video"; key: string; posterKey: string | null; ogKey: string }[];
   sizes: { sizeId: string; stock: number }[];
 };
+
+/** Every stored file of a media slot: the photo or video, its poster frame and its OG image. */
+const mediaKeys = (i: { key: string; posterKey: string | null; ogKey: string }) => [i.key, i.ogKey, ...(i.posterKey ? [i.posterKey] : [])];
 
 const active = { where: { isActive: true }, orderBy: { sortOrder: "asc" as const } };
 
@@ -46,7 +51,9 @@ export async function listProductOptions() {
 function checkInput(shopId: string, input: NewDesign) {
   if (input.rentPerDay == null && input.rentPerWeek == null && input.sellPrice == null) throw new Error("no price");
   const prefix = productPrefix(shopId);
-  for (const img of input.images) if (!isOwnKey(img.key, prefix) || !isOwnKey(img.ogKey, prefix)) throw new Error("image key not owned by shop");
+  for (const img of input.images)
+    if (!isOwnKey(img.key, prefix) || !isOwnKey(img.ogKey, prefix) || (img.posterKey && !isOwnKey(img.posterKey, prefix))) throw new Error("image key not owned by shop");
+  checkMedia(input.images, env.NEXT_PUBLIC_MAX_VIDEOS_PER_PRODUCT);
 }
 
 /** Category, for-whom and colours (in list order) that make the title. Throws on unknown ids. */
@@ -97,7 +104,7 @@ export async function createDesign(shopId: string, actorId: string, input: NewDe
           colours: { connect: colours.map((c) => ({ id: c.id })) },
           ...productTitle(category, colours, forWhom),
           sizes: { create: input.sizes.map((s) => ({ sizeId: s.sizeId, stockCount: s.stock, availableCount: s.stock })) },
-          images: { create: input.images.map((img, i) => ({ key: img.key, ogKey: img.ogKey, sortOrder: i })) },
+          images: { create: input.images.map((img, i) => ({ kind: img.kind, key: img.key, posterKey: img.posterKey, ogKey: img.ogKey, sortOrder: i })) },
         },
       });
       await audit(tx, { actorId, action: "design.create", entity: "Design", entityId: design.id, after: { ...input, code: product.code, moderation } });
@@ -204,7 +211,7 @@ export async function deleteProduct(shopId: string, actorId: string, productId: 
     await audit(tx, { actorId, action: "product.delete", entity: "Product", entityId: p.id, before: { code: p.code, titleEn: p.titleEn } });
   });
   // files go after the rows, so a failed delete never leaves a product pointing at missing photos
-  await Promise.allSettled(p.images.flatMap((i) => [storage.delete(i.key), storage.delete(i.ogKey)]));
+  await Promise.allSettled(p.images.flatMap(mediaKeys).map((k) => storage.delete(k)));
 }
 
 /** For Edit and Duplicate: the design's fields plus the product's colours, photos and sizes. */
@@ -229,7 +236,9 @@ export async function updateProduct(shopId: string, actorId: string, productId: 
   const p = await ownedProduct(shopId, productId);
   checkInput(shopId, input);
   const { category, forWhom, colours } = await titleParts(input);
-  const removed = p.images.filter((i) => !input.images.some((n) => n.key === i.key));
+  // a changed frame keeps the video's key, so every file is compared, not just `key`
+  const kept = new Set(input.images.flatMap(mediaKeys));
+  const removed = p.images.flatMap(mediaKeys).filter((k) => !kept.has(k));
 
   const moderation = await db.$transaction(
     async (tx) => {
@@ -245,7 +254,7 @@ export async function updateProduct(shopId: string, actorId: string, productId: 
           setPieces: ids,
           fabrics: ids,
           works: ids,
-          products: { include: { colours: { orderBy: { sortOrder: "asc" } }, sizes: true, images: { select: { key: true } } } },
+          products: { include: { colours: { orderBy: { sortOrder: "asc" } }, sizes: true, images: { select: { key: true, posterKey: true } } } },
         },
       });
       const self = before.products.find((x) => x.id === p.id)!;
@@ -259,7 +268,7 @@ export async function updateProduct(shopId: string, actorId: string, productId: 
         fabricIds: pick(before.fabrics),
         workIds: pick(before.works),
         colourIds: pick(self.colours),
-        imageKeys: self.images.map((i) => i.key),
+        imageKeys: self.images.flatMap((i) => [i.key, i.posterKey ?? ""]),
         rentPerDay: before.rentPerDay,
         rentPerWeek: before.rentPerWeek,
         sellPrice: before.sellPrice,
@@ -275,7 +284,7 @@ export async function updateProduct(shopId: string, actorId: string, productId: 
         fabricIds: input.fabricIds,
         workIds: input.workIds,
         colourIds: input.colourIds,
-        imageKeys: input.images.map((i) => i.key),
+        imageKeys: input.images.flatMap((i) => [i.key, i.posterKey ?? ""]),
         rentPerDay: input.rentPerDay,
         rentPerWeek: input.rentPerWeek,
         sellPrice: input.sellPrice,
@@ -305,7 +314,7 @@ export async function updateProduct(shopId: string, actorId: string, productId: 
         });
       }
       await tx.productImage.deleteMany({ where: { productId: p.id } });
-      await tx.productImage.createMany({ data: input.images.map((img, i) => ({ productId: p.id, key: img.key, ogKey: img.ogKey, sortOrder: i })) });
+      await tx.productImage.createMany({ data: input.images.map((img, i) => ({ productId: p.id, kind: img.kind, key: img.key, posterKey: img.posterKey, ogKey: img.ogKey, sortOrder: i })) });
       await tx.product.update({
         where: { id: p.id },
         data: { colours: { set: colours.map((c) => ({ id: c.id })) }, ...productTitle(category, colours, forWhom), lastSellerTouchAt: new Date(), ...review },
@@ -315,7 +324,7 @@ export async function updateProduct(shopId: string, actorId: string, productId: 
     },
     { timeout: 20_000 },
   );
-  await Promise.allSettled(removed.flatMap((i) => [storage.delete(i.key), storage.delete(i.ogKey)]));
+  await Promise.allSettled(removed.map((k) => storage.delete(k)));
   return moderation;
 }
 

@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { productPrefix, shopPhotoPrefix } from "@/lib/upload-key";
 import { hit } from "@/server/rate-limit";
-import { discardUploads, signImageUpload } from "@/server/services/uploads";
+import { discardUploads, signImageUpload, signVideoUpload } from "@/server/services/uploads";
 import { getSellerContext } from "@/server/seller";
 
 export type UploadScope = "product" | "shop";
@@ -24,7 +24,13 @@ export async function signUpload(scope: UploadScope, main: unknown, og?: unknown
   return signImageUpload(prefix, file.parse(main), og === undefined ? undefined : file.parse(og));
 }
 
+export async function signVideo(video: unknown, poster: unknown, og: unknown) {
+  const { user, prefix } = await prefixFor("product");
+  if (!(await hit(`upload:${user.id}`, 300, 3600))) throw new Error("too many uploads");
+  return signVideoUpload(prefix, file.parse(video), file.parse(poster), file.parse(og));
+}
+
 export async function discardUpload(scope: UploadScope, keys: unknown) {
   const { prefix } = await prefixFor(scope);
-  await discardUploads(prefix, z.array(z.string()).max(4).parse(keys));
+  await discardUploads(prefix, z.array(z.string()).max(6).parse(keys));
 }

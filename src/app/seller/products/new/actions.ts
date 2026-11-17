@@ -22,7 +22,10 @@ const schema = z
     fabricIds: z.array(id).max(20),
     workIds: z.array(id).max(20),
     colourIds: z.array(id).min(1).max(20),
-    images: z.array(z.object({ key: z.string().max(200), ogKey: z.string().max(200) })).min(1).max(env.NEXT_PUBLIC_MAX_IMAGES_PER_PRODUCT),
+    images: z
+      .array(z.object({ kind: z.enum(["image", "video"]), key: z.string().max(200), posterKey: z.string().max(200).nullable(), ogKey: z.string().max(200) }))
+      .min(1)
+      .max(env.NEXT_PUBLIC_MAX_IMAGES_PER_PRODUCT),
     sizes: z.array(z.object({ sizeId: id, stock: z.number().int().min(1).max(99) })).min(1).max(20),
     rentPerDay: price,
     rentPerWeek: price,

@@ -1,5 +1,6 @@
 import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
+import { stillKey } from "@/lib/media";
 import type { Moderation, RejectReason } from "@/lib/moderation";
 import { db } from "../db";
 import { imageSrc } from "../storage";
@@ -46,7 +47,7 @@ const item = {
   hiddenByAdmin: true,
   rejectReason: true,
   rejectNote: true,
-  images: { orderBy: { sortOrder: "asc" }, select: { key: true } },
+  images: { orderBy: { sortOrder: "asc" }, select: { kind: true, key: true, posterKey: true } },
   colours: { orderBy: { sortOrder: "asc" }, select: { nameEn: true, nameHi: true, hex: true } },
   sizes: { orderBy: { size: { sortOrder: "asc" } }, select: { stockCount: true, size: named } },
   _count: { select: { reports: { where: { status: "open" } } } },
@@ -70,7 +71,8 @@ const item = {
 } satisfies Prisma.ProductSelect;
 
 type Row = Prisma.ProductGetPayload<{ select: typeof item }>;
-export type QueueItem = Omit<Row, "images" | "submittedAt"> & { images: string[]; version: string };
+export type QueueMedia = { kind: "image" | "video"; src: string; poster: string };
+export type QueueItem = Omit<Row, "images" | "submittedAt"> & { images: QueueMedia[]; version: string };
 
 const baseWhere = (f: Pick<QueueFilter, "status" | "category" | "q">): Prisma.ProductWhereInput => {
   const q = f.q.trim();
@@ -97,7 +99,7 @@ export async function listQueue(f: QueueFilter, cursor: QueueCursor | null) {
   const page = rows.slice(0, QUEUE_PAGE);
   const last = page.at(-1);
   return {
-    items: page.map(({ images, submittedAt, ...r }): QueueItem => ({ ...r, images: images.map((i) => imageSrc(i.key)), version: submittedAt.toISOString() })),
+    items: page.map(({ images, submittedAt, ...r }): QueueItem => ({ ...r, images: images.map((i) => ({ kind: i.kind, src: imageSrc(i.key), poster: imageSrc(stillKey(i)) })), version: submittedAt.toISOString() })),
     next: rows.length > QUEUE_PAGE && last ? { at: last.submittedAt.toISOString(), id: last.id } : null,
   };
 }

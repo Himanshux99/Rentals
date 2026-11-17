@@ -96,15 +96,66 @@ async function ogCard(file: File): Promise<File> {
   return new File([blob], "og.jpg", { type: "image/jpeg" });
 }
 
-/** Main WebP (JPEG on WebViews that can't encode WebP) plus the OG JPEG (1200x630). `ogOnly` returns just the JPEG as main. Product photos are padded to 1:1 first. */
-export async function compressImage(input: File, maxEdge: number, ogOnly = false): Promise<{ main: File; og?: File }> {
-  const file = ogOnly ? input : await padSquare(input);
+/** Main WebP (JPEG on WebViews that can't encode WebP) plus the OG JPEG (1200x630). `ogOnly` returns just the JPEG as main. Product photos are padded to 1:1 first; a video's frame is not (`pad` false), so it keeps the video's shape. */
+export async function compressImage(input: File, maxEdge: number, ogOnly = false, pad = true): Promise<{ main: File; og?: File }> {
+  const file = ogOnly || !pad ? input : await padSquare(input);
   const og = await toJpeg(ogOnly ? file : await ogCard(file), OG_EDGE, OG_MAX_MB);
   if (ogOnly) return { main: og };
   let main = await imageCompression(file, { maxWidthOrHeight: maxEdge, fileType: "image/webp", initialQuality: 0.8, useWebWorker: true });
   // canvas.toBlob hands back PNG when WebP encoding is missing
   if (main.type !== "image/webp") main = await toJpeg(file, maxEdge);
   return { main, og };
+}
+
+/** Loads a video file into a detached <video> so its length and frames can be read. Call `done()` to free it. */
+export async function openVideo(file: File) {
+  const url = URL.createObjectURL(file);
+  const video = document.createElement("video");
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "auto";
+  video.src = url;
+  try {
+    await new Promise<void>((res, rej) => {
+      video.onloadedmetadata = () => res();
+      video.onerror = () => rej(new Error("video can't be read"));
+    });
+  } catch (e) {
+    URL.revokeObjectURL(url);
+    throw e;
+  }
+  return { video, done: () => URL.revokeObjectURL(url) };
+}
+
+/** Length of a video file in seconds. */
+export async function videoDuration(file: File) {
+  const { video, done } = await openVideo(file);
+  const d = video.duration;
+  done();
+  return d;
+}
+
+/** The frame at `seconds` as a JPEG (long edge capped at 1600 px), via canvas. */
+export async function grabFrame(file: File, seconds: number): Promise<File> {
+  const { video, done } = await openVideo(file);
+  try {
+    const seeked = new Promise<void>((res, rej) => {
+      video.onseeked = () => res();
+      video.onerror = () => rej(new Error("seek failed"));
+    });
+    video.currentTime = Math.min(Math.max(0, seconds), Math.max(0, video.duration - 0.05));
+    await seeked;
+    const k = Math.min(1, 1600 / Math.max(video.videoWidth, video.videoHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(video.videoWidth * k);
+    c.height = Math.round(video.videoHeight * k);
+    c.getContext("2d")!.drawImage(video, 0, 0, c.width, c.height);
+    const blob = await new Promise<Blob | null>((res) => c.toBlob(res, "image/jpeg", 0.95));
+    if (!blob) throw new Error("frame grab failed");
+    return new File([blob], "frame.jpg", { type: "image/jpeg" });
+  } finally {
+    done();
+  }
 }
 
 function putOnce(url: string, body: Blob, onProgress: (loaded: number) => void) {

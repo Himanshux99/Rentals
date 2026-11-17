@@ -29,6 +29,7 @@ export default async function EditProductPage({ params }: PageProps<"/seller/pro
           options={options}
           maxImages={env.NEXT_PUBLIC_MAX_IMAGES_PER_PRODUCT}
           maxEdge={env.NEXT_PUBLIC_IMAGE_MAX_EDGE}
+          video={{ max: env.NEXT_PUBLIC_MAX_VIDEOS_PER_PRODUCT, mb: env.NEXT_PUBLIC_VIDEO_MAX_UPLOAD_MB, seconds: env.NEXT_PUBLIC_VIDEO_MAX_SECONDS }}
           initial={toInitial(product, true)}
           productId={product.id}
         />

@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { BadgeCheck, Check, Inbox, Loader2, Maximize2, X } from "lucide-react";
+import { BadgeCheck, Check, Inbox, Loader2, Maximize2, Play, X } from "lucide-react";
 import { chip } from "@/components/app/chip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -167,9 +167,13 @@ export function ReviewQueue({ filter, initial, pending: initialPending }: { filt
                 </SheetDescription>
               </SheetHeader>
               <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
-                {inspecting.images.map((src, i) => (
-                  <div key={src} className="relative aspect-[3/4] w-full bg-muted">
-                    <Image src={src} alt={t("photoN", { n: i + 1 })} fill sizes="(min-width: 640px) 42rem, 100vw" className="object-contain" />
+                {inspecting.images.map((m, i) => (
+                  <div key={m.src} className="relative aspect-[3/4] w-full bg-muted">
+                    {m.kind === "video" ? (
+                      <video src={m.src} poster={m.poster} controls playsInline preload="metadata" className="size-full object-contain" />
+                    ) : (
+                      <Image src={m.src} alt={t("photoN", { n: i + 1 })} fill sizes="(min-width: 640px) 42rem, 100vw" className="object-contain" />
+                    )}
                   </div>
                 ))}
                 <Facts item={inspecting} full />
@@ -222,9 +226,10 @@ function ItemCard({
       className={cn("flex flex-col gap-4 bg-card p-4 outline-none lg:flex-row", active && "ring-2 ring-primary")}
     >
       <div className="flex gap-2 overflow-x-auto lg:w-[23rem] lg:shrink-0 lg:flex-wrap lg:content-start">
-        {item.images.map((src, i) => (
-          <button key={src} type="button" onClick={onInspect} aria-label={t("photoN", { n: i + 1 })} className="relative size-28 shrink-0 bg-muted">
-            <Image src={src} alt="" fill sizes="7rem" className="object-cover" />
+        {item.images.map((m, i) => (
+          <button key={m.src} type="button" onClick={onInspect} aria-label={t("photoN", { n: i + 1 })} className="relative size-28 shrink-0 bg-muted">
+            <Image src={m.poster} alt="" fill sizes="7rem" className="object-cover" />
+            {m.kind === "video" && <Play className="absolute bottom-1 left-1 size-6 fill-white text-white drop-shadow" />}
           </button>
         ))}
       </div>

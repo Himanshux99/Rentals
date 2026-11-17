@@ -29,6 +29,7 @@ export default async function NewProductPage({ searchParams }: PageProps<"/selle
           options={options}
           maxImages={env.NEXT_PUBLIC_MAX_IMAGES_PER_PRODUCT}
           maxEdge={env.NEXT_PUBLIC_IMAGE_MAX_EDGE}
+          video={{ max: env.NEXT_PUBLIC_MAX_VIDEOS_PER_PRODUCT, mb: env.NEXT_PUBLIC_VIDEO_MAX_UPLOAD_MB, seconds: env.NEXT_PUBLIC_VIDEO_MAX_SECONDS }}
           initial={source ? toInitial(source, false) : undefined}
         />
       </div>

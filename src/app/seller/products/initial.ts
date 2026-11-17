@@ -1,5 +1,6 @@
 import "server-only";
 import type { getProductForEdit } from "@/server/services/products";
+import { stillKey } from "@/lib/media";
 import { imageSrc } from "@/server/storage";
 import type { ProductInitial } from "./new/product-form";
 
@@ -21,7 +22,7 @@ export function toInitial(p: Loaded, withMedia: boolean): ProductInitial {
     colourIds: ids(p.colours),
     prices: { rentPerDay: str(d.rentPerDay), rentPerWeek: str(d.rentPerWeek), sellPrice: str(d.sellPrice), securityDeposit: str(d.securityDeposit) },
     description: d.description ?? "",
-    images: withMedia ? p.images.map((i) => ({ id: i.id, preview: imageSrc(i.key), key: i.key, ogKey: i.ogKey, progress: 100 })) : [],
+    images: withMedia ? p.images.map((i) => ({ id: i.id, kind: i.kind, preview: imageSrc(stillKey(i)), key: i.key, posterKey: i.posterKey ?? undefined, ogKey: i.ogKey, progress: 100 })) : [],
     sizes: withMedia ? Object.fromEntries(p.sizes.map((s) => [s.sizeId, Math.max(1, s.stockCount)])) : {},
   };
 }

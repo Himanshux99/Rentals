@@ -2,8 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { BadgeCheck, MapPin } from "lucide-react";
+import { AutoplayVideo } from "@/components/app/autoplay-video";
 import { Badge } from "@/components/ui/badge";
 import { availability, mainPrice } from "@/lib/catalog";
+import { stillKey } from "@/lib/media";
 import type { CatalogCard } from "@/server/services/catalog";
 import { imageSrc } from "@/server/storage";
 import { cn } from "@/lib/utils";
@@ -37,8 +39,17 @@ export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: 
       <Link href={`/p/${p.code}`} className="flex flex-1 flex-col gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-ring">
         <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
           {cover && (
-            <Image src={imageSrc(cover.key)} alt="" fill priority={priority} sizes="(min-width: 1280px) 22vw, (min-width: 640px) 33vw, 50vw" className="object-contain" />
+            <Image
+              src={imageSrc(stillKey(cover))}
+              alt=""
+              fill
+              priority={priority}
+              sizes="(min-width: 1280px) 22vw, (min-width: 640px) 33vw, 50vw"
+              className={cover.kind === "video" ? "object-cover" : "object-contain"}
+            />
           )}
+          {/* the poster above shows until the video is on screen and playing */}
+          {cover?.kind === "video" && <AutoplayVideo src={imageSrc(cover.key)} className="absolute inset-0 size-full object-cover" />}
           <AvailabilityBadge sizes={p.sizes} className="absolute left-2 top-2" />
         </div>
         <div className="flex flex-1 flex-col gap-1 px-2">

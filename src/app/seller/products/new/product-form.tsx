@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { chip } from "@/components/app/chip";
-import { ImagePicker, type PickedImage } from "@/components/app/image-picker";
+import { ImagePicker, type PickedImage, type VideoLimits } from "@/components/app/image-picker";
 import { createDesignAction, updateProductAction, type ProductFormState } from "./actions";
 
 type Opt = { id: string; nameEn: string; nameHi: string };
@@ -35,9 +35,9 @@ type Offer = (typeof OFFERS)[number];
 
 const legend ="flex items-center gap-2 text-lg font-semibold";
 
-type FormProps = { options: Options; maxImages: number; maxEdge: number; initial?: ProductInitial; productId?: string };
+type FormProps = { options: Options; maxImages: number; maxEdge: number; video: VideoLimits; initial?: ProductInitial; productId?: string };
 
-export function ProductForm({ options, maxImages, maxEdge, initial, productId }: FormProps) {
+export function ProductForm({ options, maxImages, maxEdge, video, initial, productId }: FormProps) {
   const t = useTranslations("product");
   const locale = useLocale();
   const name = (o: Opt) => (locale === "hi" ? o.nameHi : o.nameEn);
@@ -78,7 +78,7 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
     sellPrice: offers.includes("sellPrice") ? num(prices.sellPrice) : null,
     securityDeposit: rents ? num(prices.securityDeposit) : null,
     description: description.trim() || null,
-    images: images.filter((i) => i.key && i.ogKey).map((i) => ({ key: i.key, ogKey: i.ogKey })),
+    images: images.filter((i) => i.key && i.ogKey && (i.kind !== "video" || i.posterKey)).map((i) => ({ kind: i.kind ?? "image", key: i.key, posterKey: i.posterKey ?? null, ogKey: i.ogKey })),
     sizes: options.sizes.filter((s) => sizes[s.id]).map((s) => ({ sizeId: s.id, stock: sizes[s.id] })),
   });
   const err = (k: keyof NonNullable<ProductFormState["errors"]>) => (state.errors?.[k] ? t(state.errors[k]) : null);
@@ -113,7 +113,7 @@ export function ProductForm({ options, maxImages, maxEdge, initial, productId }:
           <Camera className="size-5" />
           {t("photos")}
         </FieldLegend>
-        <ImagePicker scope="product" max={maxImages} maxEdge={maxEdge} images={images} setImages={setImages} />
+        <ImagePicker scope="product" max={maxImages} maxEdge={maxEdge} images={images} setImages={setImages} video={video} />
         <FieldError>{err("images")}</FieldError>
       </FieldSet>
 

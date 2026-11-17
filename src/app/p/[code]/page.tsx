@@ -9,6 +9,7 @@ import { ChipLink } from "@/components/app/chip-link";
 import { AvailabilityBadge } from "@/components/app/product-card";
 import { SiteFooter } from "@/components/app/site-footer";
 import { mainPrice } from "@/lib/catalog";
+import { stillKey } from "@/lib/media";
 import { env } from "@/server/env";
 import { getProductByCode } from "@/server/services/catalog";
 import { imageSrc, storage } from "@/server/storage";
@@ -69,7 +70,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
     <>
       <AppBar />
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-8 pt-6 sm:px-8 sm:pt-8 md:grid md:grid-cols-2 md:gap-10">
-        <Gallery images={p.images.map((img) => imageSrc(img.key))} title={title} />
+        <Gallery media={p.images.map((img) => ({ kind: img.kind, src: imageSrc(img.key), poster: imageSrc(stillKey(img)) }))} title={title} />
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
@@ -128,7 +129,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[code]">) {
             code={p.code}
             title={title}
             price={await priceLine(p)}
-            cover={p.images[0] ? imageSrc(p.images[0].key) : null}
+            cover={p.images[0] ? imageSrc(stillKey(p.images[0])) : null}
             url={`${env.APP_URL}/p/${p.code}`}
             whatsappPhone={d.shop.whatsappPhone}
             sizes={p.sizes.map((s) => ({ id: s.sizeId, name: name(s.size), available: s.availableCount }))}

@@ -3,6 +3,6 @@
 export const productPrefix = (shopId: string) => `products/${shopId}/`;
 export const shopPhotoPrefix = (userId: string) => `shops/${userId}/`;
 
-const NAME = /^[a-f0-9]{32}(-og)?\.(webp|jpg)$/;
+const NAME = /^[a-f0-9]{32}(-og|-poster)?\.(webp|jpg|mp4|mov)$/;
 
 export const isOwnKey = (key: string, prefix: string) => key.startsWith(prefix) && NAME.test(key.slice(prefix.length));

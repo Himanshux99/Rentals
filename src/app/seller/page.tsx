@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { ConfirmButton } from "@/components/app/confirm-button";
 import { Stripe } from "@/components/app/stripe";
 import { isStale, waShare } from "@/lib/catalog";
+import { stillKey } from "@/lib/media";
 import { env } from "@/server/env";
 import { getSellerContext } from "@/server/seller";
 import { db } from "@/server/db";
@@ -158,7 +159,7 @@ export default async function SellerHome({ searchParams }: PageProps<"/seller">)
                           <Link href={`/p/${p.code}`} aria-label={hi ? p.titleHi : p.titleEn} className="relative block aspect-square w-full overflow-hidden bg-muted">
                             {p.images[0] && (
                               <Image
-                                src={imageSrc(p.images[0].key)}
+                                src={imageSrc(stillKey(p.images[0]))}
                                 alt=""
                                 fill
                                 sizes="(min-width: 1024px) 18rem, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"

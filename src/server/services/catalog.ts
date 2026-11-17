@@ -24,7 +24,7 @@ const card = {
   isFeatured: true,
   lastSellerTouchAt: true,
   createdAt: true,
-  images: { orderBy: { sortOrder: "asc" }, take: 1, select: { key: true } },
+  images: { orderBy: { sortOrder: "asc" }, take: 1, select: { kind: true, key: true, posterKey: true } },
   sizes: { select: { stockCount: true, availableCount: true, freeFromDate: true } },
   design: {
     select: {
