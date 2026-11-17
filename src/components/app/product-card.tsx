@@ -45,11 +45,11 @@ export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: 
               fill
               priority={priority}
               sizes="(min-width: 1280px) 22vw, (min-width: 640px) 33vw, 50vw"
-              className={cover.kind === "video" ? "object-cover" : "object-contain"}
+              className="object-contain"
             />
           )}
           {/* the poster above shows until the video is on screen and playing */}
-          {cover?.kind === "video" && <AutoplayVideo src={imageSrc(cover.key)} className="absolute inset-0 size-full object-cover" />}
+          {cover?.kind === "video" && <AutoplayVideo src={imageSrc(cover.key)} className="absolute inset-0 size-full object-contain" />}
           <AvailabilityBadge sizes={p.sizes} className="absolute left-2 top-2" />
         </div>
         <div className="flex flex-1 flex-col gap-1 px-2">

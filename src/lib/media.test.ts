@@ -11,7 +11,8 @@ test("stillKey prefers the poster", () => {
 });
 
 test("isVideoKey", () => {
-  assert.ok(isVideoKey("x.mp4") && isVideoKey("x.mov"));
+  assert.ok(isVideoKey("x.mp4"));
+  assert.ok(!isVideoKey("x.mov"));
   assert.ok(!isVideoKey("x.webp"));
 });
 

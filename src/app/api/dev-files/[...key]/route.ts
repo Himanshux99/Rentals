@@ -1,7 +1,7 @@
 import { env } from "@/server/env";
 import { readLocal } from "@/server/storage/local";
 
-const TYPES: Record<string, string> = { webp: "image/webp", jpg: "image/jpeg", jpeg: "image/jpeg", mp4: "video/mp4", mov: "video/quicktime" };
+const TYPES: Record<string, string> = { webp: "image/webp", jpg: "image/jpeg", jpeg: "image/jpeg", mp4: "video/mp4" };
 
 // Serves locally stored uploads when STORAGE_DRIVER=local.
 export async function GET(req: Request, { params }: { params: Promise<{ key: string[] }> }) {

@@ -8,14 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { compressImage, putFile, videoDuration } from "@/lib/image/upload";
-import { VIDEO_TYPES } from "@/lib/media";
+import { prepareVideo, VideoError } from "@/lib/video/convert";
 import { discardUpload, signUpload, signVideo, type UploadScope } from "@/app/seller/uploads";
 
 /** A photo or video in the picker. `key` is set once all its files are in storage. A video's `preview` is its chosen frame, and `original` its file while it is still in this browser session (needed to re-pick the frame). */
 export type PickedImage = { id: string; kind?: "image" | "video"; original?: File; preview: string; key?: string; posterKey?: string; ogKey?: string; progress: number; failed?: boolean };
 
 /** Limits for videos; leave `video` out for photo-only pickers (shop photo). */
-export type VideoLimits = { max: number; mb: number; seconds: number };
+export type VideoLimits = { max: number; seconds: number; sourceMb: number; uploadMb: number };
 
 type Props = {
   scope: UploadScope;
@@ -28,6 +28,8 @@ type Props = {
 
 type VideoJob = { file: File; duration: number; editId?: string };
 
+const VIDEO_ERROR = { Bad: "videoBad", TooBig: "videoTooBig", TooLong: "videoTooLong", CantConvert: "videoCantConvert" } as const;
+
 const keysOf = (i: PickedImage) => [i.key, i.posterKey, i.ogKey].filter((k): k is string => !!k);
 
 /** Pick from camera or gallery, compress in the browser, upload straight to storage. First item is the cover. */
@@ -38,6 +40,7 @@ export function ImagePicker({ scope, max, maxEdge, images, setImages, video }: P
   const [queue, setQueue] = useState<{ file: File; editId?: string }[]>([]);
   const [videoQueue, setVideoQueue] = useState<VideoJob[]>([]);
   const [error, setError] = useState<string>();
+  const [converting, setConverting] = useState<{ name: string; pct: number }>();
   // The picked photos, kept for re-cropping in this session.
   const originals = useRef(new Map<string, File>());
 
@@ -95,18 +98,17 @@ export function ImagePicker({ scope, max, maxEdge, images, setImages, video }: P
     }
   }
 
+  // Reads the file, checks length and size, and turns .mov / HEVC into an MP4 (H.264) in the browser before anything is uploaded.
   async function checkVideo(file: File): Promise<VideoJob | undefined> {
     if (!video) return;
-    if (!(VIDEO_TYPES as readonly string[]).includes(file.type)) return setError(t("videoBad")), undefined;
-    if (file.size > video.mb * 1024 * 1024) return setError(t("videoTooBig", { mb: video.mb })), undefined;
+    setConverting({ name: file.name, pct: 0 });
     try {
-      const duration = await videoDuration(file);
-      if (!Number.isFinite(duration)) throw new Error("no duration");
-      if (duration > video.seconds) return setError(t("videoTooLong", { s: video.seconds })), undefined;
-      return { file, duration };
+      return await prepareVideo(file, video, (p) => setConverting({ name: file.name, pct: Math.round(p * 100) }));
     } catch (e) {
       console.error(e);
-      setError(t("videoBad"));
+      setError(e instanceof VideoError ? t(VIDEO_ERROR[e.code], e.values) : t("videoBad"));
+    } finally {
+      setConverting(undefined);
     }
   }
 
@@ -124,8 +126,11 @@ export function ImagePicker({ scope, max, maxEdge, images, setImages, video }: P
 
     const room = video ? video.max - videoCount : 0;
     if (videos.length > room) setError(t("videoLimit", { max: video?.max ?? 0 }));
-    const jobs = (await Promise.all(videos.slice(0, Math.max(0, room)).map(checkVideo))).filter((j): j is VideoJob => !!j);
-    if (jobs.length) setVideoQueue((q) => [...q, ...jobs]);
+    // one at a time: converting several clips at once would exhaust a phone's memory
+    for (const f of videos.slice(0, Math.max(0, room))) {
+      const job = await checkVideo(f);
+      if (job) setVideoQueue((q) => [...q, job]);
+    }
   }
 
   function framed(frame: File) {
@@ -257,10 +262,16 @@ export function ImagePicker({ scope, max, maxEdge, images, setImages, video }: P
         </div>
       )}
       {images.length < max && (
-        <Button type="button" variant="outline" className="h-14 gap-2 text-lg" onClick={() => input.current?.click()}>
+        <Button type="button" variant="outline" className="h-14 gap-2 text-lg" disabled={!!converting} onClick={() => input.current?.click()}>
           <ImagePlus className="size-5" />
           {video ? (images.length ? t("addMoreMedia") : t("addCoverMedia")) : images.length ? t("addMore") : t("addCover")}
         </Button>
+      )}
+      {converting && (
+        <div className="flex flex-col gap-1" role="status">
+          <p className="text-base">{t("converting")}</p>
+          <Progress value={converting.pct} aria-label={t("converting")} />
+        </div>
       )}
       {error && (
         <p role="alert" className="text-base text-destructive">

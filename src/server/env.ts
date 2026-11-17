@@ -26,6 +26,8 @@ const schema = z
     // videos count inside MAX_IMAGES_PER_PRODUCT
     NEXT_PUBLIC_MAX_VIDEOS_PER_PRODUCT: int(2),
     NEXT_PUBLIC_VIDEO_MAX_UPLOAD_MB: int(50),
+    // size of the file picked from the phone; it is converted in the browser to an MP4 within MAX_UPLOAD_MB
+    NEXT_PUBLIC_VIDEO_MAX_SOURCE_MB: int(300),
     NEXT_PUBLIC_VIDEO_MAX_SECONDS: int(60),
 
     AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),

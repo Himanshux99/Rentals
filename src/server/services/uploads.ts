@@ -5,7 +5,7 @@ import { isOwnKey } from "@/lib/upload-key";
 import { db } from "../db";
 import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES, MAX_VIDEO_BYTES, storage } from "../storage";
 
-const EXT = { "image/webp": "webp", "image/jpeg": "jpg", "video/mp4": "mp4", "video/quicktime": "mov" } as const;
+const EXT = { "image/webp": "webp", "image/jpeg": "jpg", "video/mp4": "mp4" } as const;
 
 export type UploadFile = { type: string; bytes: number };
 

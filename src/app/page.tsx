@@ -1,5 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { Suspense } from "react";
+import { CatalogSkeleton } from "@/components/feedback/skeletons";
 import { CalendarDays, IndianRupee, MapPin, ShieldCheck, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppBar } from "@/components/app/app-bar";
@@ -51,7 +53,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         </div>
       </section>
       <main id="dresses" className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 px-4 pb-8 pt-8 sm:px-8">
-        <CatalogListing path="/" filters={parseFilters(sp)} />
+        <Suspense fallback={<CatalogSkeleton />}>
+          <CatalogListing path="/" filters={parseFilters(sp)} />
+        </Suspense>
       </main>
       <SiteFooter />
     </>

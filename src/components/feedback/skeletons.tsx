@@ -25,6 +25,35 @@ export function ProductGridSkeleton({ count = 6 }: { count?: number }) {
   );
 }
 
+/** Mirrors CatalogListing: search row, four chip rows, filter/sort row, count, grid (sidebar on lg). */
+export function CatalogSkeleton() {
+  return (
+    <div aria-hidden className="flex flex-col gap-4">
+      <div className="flex gap-2">
+        <Skeleton className="h-12 flex-1 rounded-xl" />
+        <Skeleton className="h-12 w-14" />
+      </div>
+      <div className="-mx-4 flex flex-col gap-2 overflow-hidden px-4">
+        {[0, 1, 2, 3].map((r) => (
+          <div key={r} className="flex gap-2 pb-1">
+            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-12 w-24 shrink-0 rounded-full" />
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-8 lg:grid-cols-[18rem_1fr]">
+        <Skeleton className="hidden h-96 rounded-2xl lg:block" />
+        <div className="flex min-w-0 flex-col gap-4">
+          <Skeleton className="h-12 w-32 lg:hidden" />
+          <Skeleton className="h-5 w-40" />
+          <ProductGridSkeleton />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ProductDetailSkeleton() {
   return (
     <div aria-hidden className="grid gap-6 md:grid-cols-2">
