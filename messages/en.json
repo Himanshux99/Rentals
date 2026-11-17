@@ -394,7 +394,6 @@
     "perDay": "₹{amount} / din",
     "perWeek": "₹{amount} / hafta",
     "forSale": "₹{amount} to buy",
-    "available": "Available",
     "rentedUntil": "Rented — free from {date}",
     "allRented": "All rented",
     "searchPlaceholder": "Search: lehenga, red, haldi…",
@@ -427,7 +426,9 @@
     "loadMore": "Show {count} more",
     "rentNow": "Rent now",
     "fabric": "Fabric",
-    "work": "Work"
+    "work": "Work",
+    "notAvailable": "Not available",
+    "viewDress": "View dress"
   },
   "product_page": {
     "pickSize": "Size",

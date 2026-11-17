@@ -18,16 +18,13 @@ export async function PriceText({ prices }: { prices: Parameters<typeof mainPric
   return <>{t(p.unit === "day" ? "perDay" : p.unit === "week" ? "perWeek" : "forSale", { amount })}</>;
 }
 
-export async function AvailabilityBadge({ sizes, className }: { sizes: CatalogCard["sizes"]; className?: string }) {
-  const [t, format] = await Promise.all([getTranslations("catalog"), getFormatter()]);
+/** Only shown when the dress can't be rented right now. `short` gives the plain "Not available" (catalogue cards); otherwise the free-from date. */
+export async function AvailabilityBadge({ sizes, short, className }: { sizes: CatalogCard["sizes"]; short?: boolean; className?: string }) {
   const a = availability(sizes);
-  const label =
-    a.kind === "available" ? t("available") : a.kind === "rented" ? t("rentedUntil", { date: format.dateTime(a.freeFrom, { day: "numeric", month: "short", timeZone: "UTC" }) }) : t("allRented");
-  return (
-    <Badge className={cn("h-7 rounded-full px-3 text-sm font-medium", a.kind === "available" ? "bg-secondary text-[var(--navy)]" : "bg-[var(--beige)]/90 text-[var(--ink)]", className)}>
-      {label}
-    </Badge>
-  );
+  if (a.kind === "available") return null;
+  const [t, format] = await Promise.all([getTranslations("catalog"), getFormatter()]);
+  const label = short ? t("notAvailable") : a.kind === "rented" ? t("rentedUntil", { date: format.dateTime(a.freeFrom, { day: "numeric", month: "short", timeZone: "UTC" }) }) : t("allRented");
+  return <Badge className={cn("h-7 rounded-full px-3 text-sm font-medium bg-[var(--beige)]/90 text-[var(--ink)]", className)}>{label}</Badge>;
 }
 
 export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: boolean }) {
@@ -50,7 +47,7 @@ export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: 
           )}
           {/* the poster above shows until the video is on screen and playing */}
           {cover?.kind === "video" && <AutoplayVideo src={imageSrc(cover.key)} className="absolute inset-0 size-full object-contain" />}
-          <AvailabilityBadge sizes={p.sizes} className="absolute left-2 top-2" />
+          <AvailabilityBadge sizes={p.sizes} short className="absolute left-2 top-2" />
         </div>
         <div className="flex flex-1 flex-col gap-1 px-2">
           <p className="text-base font-semibold leading-snug">{hi ? p.titleHi : p.titleEn}</p>
@@ -65,7 +62,7 @@ export async function ProductCard({ p, priority }: { p: CatalogCard; priority?: 
             {shop.isVerified && <BadgeCheck className="size-4 shrink-0 text-[var(--gold)]" aria-label={tc("verified")} />}
           </p>
         </div>
-        <span className="mt-1 inline-flex h-12 items-center justify-center rounded-xl bg-primary text-base font-semibold text-primary-foreground">{t("rentNow")}</span>
+        <span className="mt-1 inline-flex h-12 items-center justify-center rounded-xl bg-primary text-base font-semibold text-primary-foreground">{t(availability(p.sizes).kind === "available" ? "rentNow" : "viewDress")}</span>
       </Link>
     </li>
   );

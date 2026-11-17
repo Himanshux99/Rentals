@@ -394,7 +394,6 @@
     "perDay": "₹{amount} / दिन",
     "perWeek": "₹{amount} / हफ़्ता",
     "forSale": "₹{amount} में खरीदें",
-    "available": "मिल सकती है",
     "rentedUntil": "किराये पर — {date} से मिलेगी",
     "allRented": "सब किराये पर",
     "searchPlaceholder": "खोजें: लहंगा, लाल, हल्दी…",
@@ -427,7 +426,9 @@
     "loadMore": "{count} और दिखाएँ",
     "rentNow": "किराये पर लें",
     "fabric": "कपड़ा",
-    "work": "काम"
+    "work": "काम",
+    "notAvailable": "उपलब्ध नहीं",
+    "viewDress": "ड्रेस देखें"
   },
   "product_page": {
     "pickSize": "साइज़",
